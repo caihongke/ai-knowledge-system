@@ -2,6 +2,9 @@ import requests
 import json
 import sys
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ========== 飞书凭证（从环境变量读取） ==========
 APP_ID = os.environ.get("FEISHU_APP_ID", "")
