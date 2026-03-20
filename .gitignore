@@ -3,7 +3,6 @@
 
 # 日志和报告（运行时生成）
 logs/
-reports/
 
 # Python
 __pycache__/
