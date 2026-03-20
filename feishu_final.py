@@ -5,6 +5,9 @@ import time
 import os
 import argparse
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ========== 基础配置（从环境变量读取，避免凭证泄露） ==========
 APP_ID = os.environ.get("FEISHU_APP_ID", "")
