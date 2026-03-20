@@ -1,0 +1,15 @@
+# Claude Code 内部目录
+.claude/
+
+# 日志和报告（运行时生成）
+logs/
+reports/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# 环境变量 / 敏感配置
+.env
+*.secret
