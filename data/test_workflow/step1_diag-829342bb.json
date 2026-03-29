@@ -1,0 +1,36 @@
+{
+  "id": "step1_diag-829342bb",
+  "step_type": "step1_diag",
+  "status": "archived",
+  "project_id": "test-001",
+  "input_data": {
+    "requirement": "学习Python编程"
+  },
+  "output_data": {
+    "five_w_one_h": {
+      "What": "学习Python"
+    },
+    "swot": {
+      "S": [
+        "时间充足"
+      ],
+      "W": [
+        "零基础"
+      ]
+    },
+    "smart": [
+      {
+        "Specific": "掌握基础语法"
+      }
+    ]
+  },
+  "metadata": {
+    "created_by": "test_user",
+    "priority": "normal"
+  },
+  "created_at": "2026-03-29T19:37:29.334199",
+  "started_at": "2026-03-29T19:37:29.334678",
+  "completed_at": "2026-03-29T19:37:29.337806",
+  "revision_count": 0,
+  "max_revisions": 5
+}

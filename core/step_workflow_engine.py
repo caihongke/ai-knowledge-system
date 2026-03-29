@@ -5,7 +5,7 @@ Step Workflow Engine - 七步法工作流引擎
 """
 
 import json
-import yaml
+# import yaml
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
@@ -36,6 +36,14 @@ class StepType(Enum):
     STEP5_EXECUTE = "step5_execute"
     STEP6_MONITOR = "step6_monitor"
     STEP7_REVIEW = "step7_review"
+
+
+
+class StepJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Enum):
+            return obj.value
+        return super().default(obj)
 
 
 @dataclass
@@ -499,7 +507,7 @@ class StepWorkflowEngine:
         """保存步骤到存储"""
         step_path = self.storage_path / f"{step.id}.json"
         with open(step_path, 'w', encoding='utf-8') as f:
-            json.dump(asdict(step), f, ensure_ascii=False, indent=2)
+            json.dump(asdict(step), f, ensure_ascii=False, indent=2, cls=StepJSONEncoder)
 
     def _load_active_steps(self):
         """加载活跃的步骤"""
