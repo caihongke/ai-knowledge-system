@@ -14,6 +14,8 @@ from rich.table import Table
 
 from core.storage import Storage
 from core.spaced_repetition import SpacedRepetition
+from cli.creation_commands import register_creation_commands
+from cli.analysis_commands import register_analysis_commands
 
 # 修复 Windows GBK 编码问题
 if sys.platform == "win32":
@@ -568,6 +570,11 @@ def sys_cost():
 
     console.print()
 
+
+
+# Register creation system commands
+register_creation_commands(app)
+register_analysis_commands(app)
 
 if __name__ == "__main__":
     app()
