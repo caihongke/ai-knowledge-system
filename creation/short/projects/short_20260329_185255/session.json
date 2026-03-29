@@ -1,0 +1,145 @@
+{
+  "id": "short_20260329_185255",
+  "track": "short",
+  "title": "逆袭打工人",
+  "status": "draft",
+  "outline": {
+    "concept": "底层打工人的逆袭故事",
+    "hook_candidates": [
+      {
+        "id": "A",
+        "type": "悬念型",
+        "content": "你知道吗？底层打工人的逆袭故事...",
+        "predicted_retention": "75%"
+      },
+      {
+        "id": "B",
+        "type": "冲突型",
+        "content": "当我底层打工人的逆袭故事时，所有人都震惊了...",
+        "predicted_retention": "70%"
+      },
+      {
+        "id": "C",
+        "type": "共鸣型",
+        "content": "有没有人和我一样，经历过底层打工人的逆袭故事？",
+        "predicted_retention": "65%"
+      }
+    ],
+    "emotion_curve": [
+      {
+        "node": 0,
+        "value": 5,
+        "timestamp": "0-15s"
+      },
+      {
+        "node": 1,
+        "value": 7,
+        "timestamp": "15-30s"
+      },
+      {
+        "node": 2,
+        "value": 6,
+        "timestamp": "30-45s"
+      },
+      {
+        "node": 3,
+        "value": 8,
+        "timestamp": "45-60s"
+      },
+      {
+        "node": 4,
+        "value": 7,
+        "timestamp": "60-75s"
+      },
+      {
+        "node": 5,
+        "value": 6,
+        "timestamp": "75-90s"
+      },
+      {
+        "node": 6,
+        "value": 8,
+        "timestamp": "90-105s"
+      },
+      {
+        "node": 7,
+        "value": 9,
+        "timestamp": "105-120s"
+      },
+      {
+        "node": 8,
+        "value": 7,
+        "timestamp": "120-135s"
+      },
+      {
+        "node": 9,
+        "value": 6,
+        "timestamp": "135-150s"
+      },
+      {
+        "node": 10,
+        "value": 8,
+        "timestamp": "150-165s"
+      },
+      {
+        "node": 11,
+        "value": 9,
+        "timestamp": "165-180s"
+      },
+      {
+        "node": 12,
+        "value": 8,
+        "timestamp": "180-195s"
+      },
+      {
+        "node": 13,
+        "value": 9,
+        "timestamp": "195-210s"
+      },
+      {
+        "node": 14,
+        "value": 10,
+        "timestamp": "210-225s"
+      }
+    ],
+    "conflict_points": [
+      {
+        "time": "15s",
+        "type": "误解",
+        "intensity": "中"
+      },
+      {
+        "time": "30s",
+        "type": "对抗",
+        "intensity": "高"
+      },
+      {
+        "time": "45s",
+        "type": "转折",
+        "intensity": "高"
+      },
+      {
+        "time": "60s",
+        "type": "高潮",
+        "intensity": "极高"
+      }
+    ],
+    "scenes": [],
+    "punchline": {},
+    "components_used": []
+  },
+  "drafts": [
+    {
+      "version": 1,
+      "change_summary": "选择Hook A，生成初版剧本",
+      "created_at": "2026-03-29T18:52:56.020147"
+    }
+  ],
+  "characters": [],
+  "analysis": null,
+  "iterations": 0,
+  "platform": "douyin",
+  "genre": "励志",
+  "created_at": "2026-03-29T18:52:55.985732",
+  "updated_at": "2026-03-29T18:52:55.994306"
+}

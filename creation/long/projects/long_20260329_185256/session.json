@@ -1,0 +1,41 @@
+{
+  "id": "long_20260329_185256",
+  "track": "long",
+  "title": "修真狂徒",
+  "status": "draft",
+  "outline": {
+    "volumes": [
+      {
+        "name": "第一卷:觉醒",
+        "words": 150000,
+        "key_event": "获得金手指"
+      },
+      {
+        "name": "第二卷:崛起",
+        "words": 200000,
+        "key_event": "建立势力"
+      }
+    ],
+    "world_setting": {
+      "concept": "灵气复苏的现代都市",
+      "map": {},
+      "factions": [],
+      "rules": {
+        "power_system": "",
+        "social_structure": "",
+        "special_mechanics": []
+      },
+      "history": []
+    },
+    "main_plot": {},
+    "side_plots": []
+  },
+  "drafts": [],
+  "characters": [],
+  "analysis": null,
+  "iterations": 0,
+  "platform": "qidian",
+  "genre": "玄幻",
+  "created_at": "2026-03-29T18:52:56.021853",
+  "updated_at": "2026-03-29T18:52:56.021857"
+}
