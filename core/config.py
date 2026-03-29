@@ -32,6 +32,11 @@ class Config:
     # Claude API（从环境变量读取）
     ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 
+    # Ollama 本地大模型配置
+    OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+    OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+    OLLAMA_ENABLED = os.getenv("OLLAMA_ENABLED", "true").lower() == "true"
+
     # AI 调用限制
     AI_MONTHLY_LIMIT = 100  # 每月最大调用次数
     AI_CACHE_HOURS = 24     # AI 建议缓存有效期（小时）
@@ -55,6 +60,9 @@ class Config:
             "index_file": str(cls.INDEX_FILE),
             "feishu_configured": bool(cls.FEISHU_APP_ID and cls.FEISHU_APP_SECRET),
             "ai_configured": bool(cls.ANTHROPIC_API_KEY),
+            "ollama_configured": cls.OLLAMA_ENABLED,
+            "ollama_host": cls.OLLAMA_HOST,
+            "ollama_model": cls.OLLAMA_MODEL,
             "ai_monthly_limit": cls.AI_MONTHLY_LIMIT,
             "review_intervals": cls.REVIEW_INTERVALS,
         }

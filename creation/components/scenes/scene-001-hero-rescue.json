@@ -1,0 +1,20 @@
+{
+  "id": "scene-001",
+  "name": "英雄救美",
+  "description": "经典英雄救美桥段，制造情感升温契机",
+  "tags": ["冲突", "情感升温", "经典桥段"],
+  "params": {
+    "tension_curve": [0.3, 0.5, 0.8, 0.9, 0.4],
+    "emotion_trigger": "安全感+心动",
+    "suitable_timing": "相识初期",
+    "duration": "3-5分钟/1章",
+    "key_elements": ["危机时刻", "主角亮相", "反派吃瘪", "感激/心动"]
+  },
+  "usage_examples": [
+    "女主被小混混/反派围攻，男主及时出现",
+    "女主遇险，男主隐藏实力救场",
+    "反转救美：女主实际能自救，测试男主"
+  ],
+  "compatible_with": ["char-001", "payoff-001"],
+  "conflicts_with": []
+}

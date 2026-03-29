@@ -1,0 +1,20 @@
+{
+  "id": "char-002",
+  "name": "导师/引路人",
+  "description": "传授主角技能，关键时刻牺牲或离开，推动主角成长",
+  "tags": ["导师", "牺牲", "成长推动"],
+  "params": {
+    "wisdom_level": "9/10",
+    "combat_ability": "中等偏上",
+    "sacrifice_timing": "第一卷末或第二卷初",
+    "teaching_style": "严厉但关怀",
+    "legacy": "技能传承/遗志"
+  },
+  "usage_examples": [
+    "开局救下主角，收为弟子",
+    "传授核心技能或秘籍",
+    "为保护主角或完成使命而牺牲"
+  ],
+  "compatible_with": ["char-001", "char-003"],
+  "conflicts_with": []
+}

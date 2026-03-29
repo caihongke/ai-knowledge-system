@@ -1,0 +1,21 @@
+{
+  "id": "payoff-001",
+  "name": "打脸反派",
+  "description": "经典爽点，主角实力碾压反派，实现情绪释放",
+  "tags": ["复仇", "爽感", "打脸", "高燃"],
+  "params": {
+    "setup_chapters": 3,
+    "payoff_intensity": "高",
+    "reader_satisfaction": "9/10",
+    "villain_arrogance_level": "必须极高",
+    "reversal_degree": "180度反转",
+    "audience_reaction": "震惊+爽+解气"
+  },
+  "usage_examples": [
+    "反派嘲讽主角，主角亮出真实身份/实力",
+    "反派设局陷害，主角将计就计反杀",
+    "公开场合打脸，让反派身败名裂"
+  ],
+  "compatible_with": ["char-001", "scene-001"],
+  "conflicts_with": ["payoff-002"]
+}

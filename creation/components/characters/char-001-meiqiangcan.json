@@ -1,0 +1,20 @@
+{
+  "id": "char-001",
+  "name": "美强惨女主",
+  "description": "美貌与实力并存，但身世悲惨的女主角，成长弧光强烈",
+  "tags": ["女性向", "情感", "成长", "逆袭"],
+  "params": {
+    "beauty_level": "9/10",
+    "strength_level": "8/10",
+    "tragedy_level": "7/10",
+    "growth_potential": "高",
+    "reader_empathy": "高"
+  },
+  "usage_examples": [
+    "开局被退婚/背叛，激发逆袭动力",
+    "隐藏实力，关键时刻打脸反派",
+    "身世之谜逐步揭开，推动主线"
+  ],
+  "compatible_with": ["char-002", "scene-001"],
+  "conflicts_with": ["char-003"]
+}
