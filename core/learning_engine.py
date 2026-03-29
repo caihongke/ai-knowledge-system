@@ -1,13 +1,9 @@
 """本地规则引擎 - 基于知识库数据生成学习建议（无需 API Key）"""
 
 from collections import Counter
-from datetime import datetime
-from typing import List
 
-from core.config import Config
-from core.storage import Storage
 from core.spaced_repetition import SpacedRepetition
-
+from core.storage import Storage
 
 # 预定义学习路径图谱：标签 -> 推荐进阶方向
 LEARNING_GRAPH = {
@@ -79,7 +75,7 @@ class LearningEngine:
             "suggestions": suggestions,
         }
 
-    def _generate_suggestions(self, tag_counter, weak_areas, strong_areas, review_stats) -> List[dict]:
+    def _generate_suggestions(self, tag_counter, weak_areas, strong_areas, review_stats) -> list[dict]:
         """基于规则生成学习建议"""
         suggestions = []
 

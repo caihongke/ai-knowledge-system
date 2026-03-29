@@ -1,10 +1,10 @@
 """飞书上传集成测试 - 验证统一上传脚本"""
 
-import sys
 import os
 import subprocess
+import sys
 
-sys.stdout.reconfigure(encoding='utf-8')
+sys.stdout.reconfigure(encoding="utf-8")
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 passed = 0
@@ -25,10 +25,10 @@ def run_script(args):
     result = subprocess.run(
         [sys.executable] + args,
         capture_output=True,
-        cwd=PROJECT_ROOT, timeout=30
+        cwd=PROJECT_ROOT, timeout=30,
     )
-    stdout = result.stdout.decode('utf-8', errors='replace') if result.stdout else ""
-    stderr = result.stderr.decode('utf-8', errors='replace') if result.stderr else ""
+    stdout = result.stdout.decode("utf-8", errors="replace") if result.stdout else ""
+    stderr = result.stderr.decode("utf-8", errors="replace") if result.stderr else ""
     return result.returncode, stdout, stderr
 
 
@@ -57,7 +57,7 @@ check("返回飞书链接", "open.feishu.cn/file/" in out)
 # ====== 3. --content 上传 ======
 print("\n3. feishu_upload.py --content 上传")
 code, out, err = run_script([
-    "feishu_upload.py", "--content", "# 测试\n内容测试", "--title", "集成测试_content"
+    "feishu_upload.py", "--content", "# 测试\n内容测试", "--title", "集成测试_content",
 ])
 check("退出码为 0", code == 0, f"(got {code})")
 check("上传成功", "上传成功" in out)

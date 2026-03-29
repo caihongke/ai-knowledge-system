@@ -1,22 +1,22 @@
-# -*- coding: utf-8 -*-
-"""
-Step Workflow Engine - 七步法工作流引擎
+"""Step Workflow Engine - 七步法工作流引擎
 实现状态管理、流转控制、人机协同
 """
 
 import json
+import uuid
+from collections.abc import Callable
+from dataclasses import asdict, dataclass, field
+
 # import yaml
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Callable, Any
-from dataclasses import dataclass, field, asdict
 from threading import Timer
-import uuid
 
 
 class StepStatus(Enum):
     """步骤状态枚举"""
+
     PENDING = "pending"                    # 未开始
     IN_PROGRESS = "in_progress"           # 进行中
     PENDING_REVIEW = "pending_review"     # 待审核
@@ -29,6 +29,7 @@ class StepStatus(Enum):
 
 class StepType(Enum):
     """步骤类型"""
+
     STEP1_DIAG = "step1_diag"
     STEP2_BLUEPRINT = "step2_blueprint"
     STEP3_STRATEGY = "step3_strategy"
@@ -49,27 +50,29 @@ class StepJSONEncoder(json.JSONEncoder):
 @dataclass
 class StepTransition:
     """状态转换定义"""
+
     trigger: str
     from_status: StepStatus
     to_status: StepStatus
-    condition: Optional[str] = None
-    timeout: Optional[int] = None  # 分钟
+    condition: str | None = None
+    timeout: int | None = None  # 分钟
     auto_trigger: bool = False
 
 
 @dataclass
 class StepInstance:
     """步骤实例"""
+
     id: str
     step_type: StepType
     status: StepStatus
     project_id: str
-    input_data: Dict = field(default_factory=dict)
-    output_data: Dict = field(default_factory=dict)
-    metadata: Dict = field(default_factory=dict)
+    input_data: dict = field(default_factory=dict)
+    output_data: dict = field(default_factory=dict)
+    metadata: dict = field(default_factory=dict)
     created_at: str = ""
-    started_at: Optional[str] = None
-    completed_at: Optional[str] = None
+    started_at: str | None = None
+    completed_at: str | None = None
     revision_count: int = 0
     max_revisions: int = 5
 
@@ -81,6 +84,7 @@ class StepInstance:
 @dataclass
 class Notification:
     """通知定义"""
+
     id: str
     type: str
     recipient: str
@@ -90,12 +94,11 @@ class Notification:
     created_at: str
     read: bool = False
     action_required: bool = False
-    action_deadline: Optional[str] = None
+    action_deadline: str | None = None
 
 
 class StepWorkflowEngine:
-    """
-    七步法工作流引擎
+    """七步法工作流引擎
 
     核心功能：
     1. 状态机管理
@@ -159,17 +162,16 @@ class StepWorkflowEngine:
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
 
-        self.active_steps: Dict[str, StepInstance] = {}
-        self.timers: Dict[str, Timer] = {}
-        self.notification_handlers: List[Callable] = []
-        self.status_change_handlers: List[Callable] = []
+        self.active_steps: dict[str, StepInstance] = {}
+        self.timers: dict[str, Timer] = {}
+        self.notification_handlers: list[Callable] = []
+        self.status_change_handlers: list[Callable] = []
 
         self._load_active_steps()
 
     def create_step(self, step_type: StepType, project_id: str,
-                   input_data: Dict, **kwargs) -> StepInstance:
-        """
-        创建新步骤实例
+                   input_data: dict, **kwargs) -> StepInstance:
+        """创建新步骤实例
 
         Args:
             step_type: 步骤类型
@@ -178,6 +180,7 @@ class StepWorkflowEngine:
 
         Returns:
             StepInstance: 步骤实例
+
         """
         # 检查依赖
         if not self._check_dependencies(step_type, project_id):
@@ -191,11 +194,11 @@ class StepWorkflowEngine:
             status=StepStatus.PENDING,
             project_id=project_id,
             input_data=input_data,
-            max_revisions=kwargs.get('max_revisions', 5),
+            max_revisions=kwargs.get("max_revisions", 5),
             metadata={
-                'created_by': kwargs.get('created_by', 'system'),
-                'priority': kwargs.get('priority', 'normal'),
-            }
+                "created_by": kwargs.get("created_by", "system"),
+                "priority": kwargs.get("priority", "normal"),
+            },
         )
 
         self.active_steps[step_id] = step
@@ -218,7 +221,7 @@ class StepWorkflowEngine:
         self._save_step(step)
         return step
 
-    def complete_ai_work(self, step_id: str, output_data: Dict) -> StepInstance:
+    def complete_ai_work(self, step_id: str, output_data: dict) -> StepInstance:
         """AI完成工作"""
         step = self._get_step(step_id)
         if not step:
@@ -230,12 +233,12 @@ class StepWorkflowEngine:
         # 发送通知
         self._send_notification(
             type="step_complete",
-            recipient=step.metadata.get('created_by', 'user'),
+            recipient=step.metadata.get("created_by", "user"),
             title=f"步骤 {step.step_type.value} 已完成",
-            content=f"AI已完成产出，等待审核",
+            content="AI已完成产出，等待审核",
             priority="normal",
             action_required=True,
-            action_deadline=(datetime.now() + timedelta(hours=24)).isoformat()
+            action_deadline=(datetime.now() + timedelta(hours=24)).isoformat(),
         )
 
         self._save_step(step)
@@ -249,13 +252,13 @@ class StepWorkflowEngine:
         return step
 
     def review_step(self, step_id: str, decision: str, feedback: str = "") -> StepInstance:
-        """
-        审核步骤
+        """审核步骤
 
         Args:
             step_id: 步骤ID
             decision: approve/reject/request_revision
             feedback: 反馈内容
+
         """
         step = self._get_step(step_id)
 
@@ -268,14 +271,14 @@ class StepWorkflowEngine:
                 raise MaxRevisionError(f"已达到最大修订次数: {step.max_revisions}")
             self._transition(step, "reject")
             step.revision_count += 1
-            step.metadata['last_feedback'] = feedback
+            step.metadata["last_feedback"] = feedback
 
         elif decision == "request_revision":
             if step.revision_count >= step.max_revisions:
                 raise MaxRevisionError(f"已达到最大修订次数: {step.max_revisions}")
             self._transition(step, "request_revision")
             step.revision_count += 1
-            step.metadata['last_feedback'] = feedback
+            step.metadata["last_feedback"] = feedback
 
         self._save_step(step)
         return step
@@ -301,8 +304,8 @@ class StepWorkflowEngine:
             self.timers[step_id].cancel()
             del self.timers[step_id]
 
-        step.metadata['pause_reason'] = reason
-        step.metadata['paused_at'] = datetime.now().isoformat()
+        step.metadata["pause_reason"] = reason
+        step.metadata["paused_at"] = datetime.now().isoformat()
 
         self._save_step(step)
         return step
@@ -327,14 +330,14 @@ class StepWorkflowEngine:
             self.timers[step_id].cancel()
             del self.timers[step_id]
 
-        step.metadata['terminate_reason'] = reason
-        step.metadata['terminated_at'] = datetime.now().isoformat()
+        step.metadata["terminate_reason"] = reason
+        step.metadata["terminated_at"] = datetime.now().isoformat()
 
         self._transition(step, "terminate")
         self._save_step(step)
         return step
 
-    def get_step_status(self, step_id: str) -> Optional[Dict]:
+    def get_step_status(self, step_id: str) -> dict | None:
         """获取步骤状态"""
         step = self._get_step(step_id)
         if not step:
@@ -354,13 +357,13 @@ class StepWorkflowEngine:
             "next_action": self._get_next_action(step),
         }
 
-    def get_project_steps(self, project_id: str) -> List[Dict]:
+    def get_project_steps(self, project_id: str) -> list[dict]:
         """获取项目的所有步骤"""
         steps = []
         for step in self.active_steps.values():
             if step.project_id == project_id:
                 steps.append(self.get_step_status(step.id))
-        return sorted(steps, key=lambda x: x['created_at'])
+        return sorted(steps, key=lambda x: x["created_at"])
 
     def on_status_change(self, handler: Callable[[StepInstance, StepStatus, StepStatus], None]):
         """注册状态变更处理器"""
@@ -383,7 +386,7 @@ class StepWorkflowEngine:
 
         if not transition:
             raise InvalidTransitionError(
-                f"无效的状态转换: {old_status.value} -> {trigger}"
+                f"无效的状态转换: {old_status.value} -> {trigger}",
             )
 
         # 执行转换
@@ -413,17 +416,17 @@ class StepWorkflowEngine:
                         recipient="system",
                         title=f"步骤 {step.step_type.value} 处理超时",
                         content=f"AI处理时间超过 {timeout} 分钟",
-                        priority="high"
+                        priority="high",
                     )
                 elif step.status == StepStatus.PENDING_REVIEW:
                     # 等待审核超时
                     self._send_notification(
                         type="review_reminder",
-                        recipient=step.metadata.get('created_by', 'user'),
+                        recipient=step.metadata.get("created_by", "user"),
                         title=f"请审核步骤 {step.step_type.value} 的产出",
                         content=f"产出已完成，等待审核超过 {timeout} 分钟",
                         priority="normal",
-                        action_required=True
+                        action_required=True,
                     )
 
         timer = Timer(timeout * 60, check_timeout)
@@ -435,7 +438,7 @@ class StepWorkflowEngine:
         notification = Notification(
             id=str(uuid.uuid4()),
             created_at=datetime.now().isoformat(),
-            **kwargs
+            **kwargs,
         )
 
         for handler in self.notification_handlers:
@@ -478,42 +481,42 @@ class StepWorkflowEngine:
         }
         return progress_map.get(step.status, 0.0)
 
-    def _get_next_action(self, step: StepInstance) -> Optional[Dict]:
+    def _get_next_action(self, step: StepInstance) -> dict | None:
         """获取下一步行动建议"""
         actions = {
             StepStatus.PENDING: {
                 "action": "start",
                 "description": "启动步骤",
-                "command": f"/step-start {step.id}"
+                "command": f"/step-start {step.id}",
             },
             StepStatus.PENDING_REVIEW: {
                 "action": "review",
                 "description": "审核AI产出",
-                "command": f"/step-review {step.id}"
+                "command": f"/step-review {step.id}",
             },
             StepStatus.COMPLETED: {
                 "action": "archive",
                 "description": "归档并沉淀知识",
-                "command": f"/step-archive {step.id}"
+                "command": f"/step-archive {step.id}",
             },
         }
         return actions.get(step.status)
 
-    def _get_step(self, step_id: str) -> Optional[StepInstance]:
+    def _get_step(self, step_id: str) -> StepInstance | None:
         """获取步骤实例"""
         return self.active_steps.get(step_id)
 
     def _save_step(self, step: StepInstance):
         """保存步骤到存储"""
         step_path = self.storage_path / f"{step.id}.json"
-        with open(step_path, 'w', encoding='utf-8') as f:
+        with open(step_path, "w", encoding="utf-8") as f:
             json.dump(asdict(step), f, ensure_ascii=False, indent=2, cls=StepJSONEncoder)
 
     def _load_active_steps(self):
         """加载活跃的步骤"""
         for step_file in self.storage_path.glob("*.json"):
             try:
-                with open(step_file, 'r', encoding='utf-8') as f:
+                with open(step_file, encoding="utf-8") as f:
                     data = json.load(f)
                     step = StepInstance(**data)
                     # 只加载非终态的步骤
@@ -529,22 +532,22 @@ class StepWorkflowEngine:
 # 异常类
 class StepNotFoundError(Exception):
     """步骤不存在"""
-    pass
+
 
 
 class DependencyError(Exception):
     """依赖错误"""
-    pass
+
 
 
 class InvalidTransitionError(Exception):
     """无效状态转换"""
-    pass
+
 
 
 class MaxRevisionError(Exception):
     """超过最大修订次数"""
-    pass
+
 
 
 # 使用示例
@@ -555,7 +558,7 @@ if __name__ == "__main__":
     step = engine.create_step(
         step_type=StepType.STEP1_DIAG,
         project_id="proj-001",
-        input_data={"requirement": "我想学习Python编程"}
+        input_data={"requirement": "我想学习Python编程"},
     )
 
     print(f"创建步骤: {step.id}")

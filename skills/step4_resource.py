@@ -1,20 +1,17 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-七步法第4步 - 资源配置
+"""七步法第4步 - 资源配置
 功能：人力、时间、物资、预算配置
 输出保存到：/steps/step4/
 """
 
 import sys
-import os
 from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.storage import Storage
 from core.models import Note
+from core.storage import Storage
 
 
 def main():
@@ -80,13 +77,13 @@ def main():
         title=f"资源清单_{timestamp}",
         content=resource,
         tags=["step4", "资源", "配置"],
-        source="七步法"
+        source="七步法",
     )
     storage.add_note(note)
 
     print(f"[OK] 资源清单已生成: {resource_path}")
     print(f"[OK] 已同步到知识库，ID: {note.id}")
-    print(f"\n请完善资源配置信息。")
+    print("\n请完善资源配置信息。")
 
 
 if __name__ == "__main__":

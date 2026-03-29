@@ -1,20 +1,17 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Creation System Full Test Suite
+"""Creation System Full Test Suite
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import unittest
 
-from core.creation_agents import ScriptShortAgent, ScriptLongAgent
-from core.story_analyzer import StoryAnalyzer
-from core.iteration_engine import IterationEngine
-from core.component_engine import ComponentEngine
+from core.creation_agents import ScriptLongAgent, ScriptShortAgent
 from core.script_guard import ScriptGuard
+from core.story_analyzer import StoryAnalyzer
 
 
 class TestScriptShort(unittest.TestCase):
@@ -58,7 +55,7 @@ class TestScriptGuard(unittest.TestCase):
         result = guard.validate({
             "text": "A positive story about growth and success",
             "title": "Test",
-            "platform": "douyin"
+            "platform": "douyin",
         })
         self.assertTrue(result.passed)
         print("OK: Guard passed")

@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-七步法第1步 - 诊断与定义
+"""七步法第1步 - 诊断与定义
 功能：需求分析、SWOT分析、目标定义
 输出保存到：/steps/step1/
 """
 
 import sys
-import os
 from datetime import datetime
 from pathlib import Path
 
 # 添加项目根目录到路径
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.storage import Storage
 from core.models import Note
+from core.storage import Storage
 
 
 def main():
@@ -76,13 +73,13 @@ def main():
         title=f"诊断报告_{timestamp}",
         content=report,
         tags=["step1", "诊断", "需求分析"],
-        source="七步法"
+        source="七步法",
     )
     storage.add_note(note)
 
     print(f"[OK] 诊断报告已生成: {report_path}")
     print(f"[OK] 已同步到知识库，ID: {note.id}")
-    print(f"\n请补充完善 5W1H 和 SWOT 分析内容后，继续执行 step2。")
+    print("\n请补充完善 5W1H 和 SWOT 分析内容后，继续执行 step2。")
 
 
 if __name__ == "__main__":

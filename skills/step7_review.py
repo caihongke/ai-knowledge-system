@@ -1,21 +1,17 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-七步法第7步 - 验收与复盘
+"""七步法第7步 - 验收与复盘
 功能：效果评估、复盘总结、知识归档
 输出保存到：/logs/ 和 /reports/（对 /steps/ 只读）
 """
 
-import sys
-import os
 import shutil
+import sys
 from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.storage import Storage
-from core.models import Note
 
 
 def main():
@@ -142,14 +138,14 @@ def main():
         title=f"结项报告_{timestamp}",
         tags=["step7", "结项", "复盘"],
         category="七步法",
-        content=report
+        content=report,
     )
 
     print(f"[OK] 结项报告已生成: {report_path}")
     print(f"[OK] 复盘清单已生成: {checklist_path}")
     print(f"[OK] 项目文档已归档: {archive_dir}")
     print(f"[OK] 已同步到知识库，ID: {note.id}")
-    print(f"\n[DONE] 七步法流程已完成！")
+    print("\n[DONE] 七步法流程已完成！")
 
 
 if __name__ == "__main__":

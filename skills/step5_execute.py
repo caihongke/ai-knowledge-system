@@ -1,20 +1,17 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-七步法第5步 - 执行管理
+"""七步法第5步 - 执行管理
 功能：每日待办、问题日志、变更记录
 输出保存到：/steps/step5/
 """
 
 import sys
-import os
 from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.storage import Storage
 from core.models import Note
+from core.storage import Storage
 
 
 def main():
@@ -75,13 +72,13 @@ def main():
         title=f"每日待办_{timestamp}",
         content=todo,
         tags=["step5", "执行", "待办"],
-        source="七步法"
+        source="七步法",
     )
     storage.add_note(note)
 
     print(f"[OK] 每日待办已生成: {todo_path}")
     print(f"[OK] 已同步到知识库，ID: {note.id}")
-    print(f"\n请每天更新任务完成情况。")
+    print("\n请每天更新任务完成情况。")
 
 
 if __name__ == "__main__":

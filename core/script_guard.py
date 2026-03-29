@@ -1,19 +1,18 @@
-# -*- coding: utf-8 -*-
-"""
-ScriptGuard - 五大铁律风控系统
+"""ScriptGuard - 五大铁律风控系统
 负责剧本和网文创作的硬性约束校验
 """
 
-from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Any
-from enum import Enum
-import re
 import json
+import re
+from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class CheckResult(Enum):
     """校验结果状态"""
+
     PASSED = "passed"      # 通过
     WARNING = "warning"    # 警告（可继续）
     BLOCKED = "blocked"    # 阻断（必须整改）
@@ -22,23 +21,25 @@ class CheckResult(Enum):
 @dataclass
 class Violation:
     """违规记录"""
+
     rule_id: str
     rule_name: str
     severity: str  # "block" | "warn"
     message: str
-    location: Optional[str] = None  # 违规位置
-    suggestion: Optional[str] = None
+    location: str | None = None  # 违规位置
+    suggestion: str | None = None
 
 
 @dataclass
 class ValidationResult:
     """校验结果"""
+
     passed: bool
     status: CheckResult
-    violations: List[Violation] = field(default_factory=list)
+    violations: list[Violation] = field(default_factory=list)
     can_proceed: bool = False  # 是否可以继续创作
     requires_human_review: bool = False  # 是否需要人工审核
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return {
@@ -53,17 +54,16 @@ class ValidationResult:
                     "severity": v.severity,
                     "message": v.message,
                     "location": v.location,
-                    "suggestion": v.suggestion
+                    "suggestion": v.suggestion,
                 }
                 for v in self.violations
             ],
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
 
 class ScriptGuard:
-    """
-    AI风控校验系统 - 五大铁律
+    """AI风控校验系统 - 五大铁律
 
     IR-001: 价值观安全 - 阻断级
     IR-002: 版权合规 - 阻断级
@@ -78,7 +78,7 @@ class ScriptGuard:
         "discrimination": ["歧视", "种族", "性别歧视", "地域黑"],
         "illegal": ["毒品", "赌博", "诈骗", "黑客", "入侵"],
         "porn": ["色情", "淫秽", "性暗示"],
-        "political": ["政治", "政权", "反动"]
+        "political": ["政治", "政权", "反动"],
     }
 
     # 平台规则配置
@@ -88,43 +88,42 @@ class ScriptGuard:
             "max_duration": 300,  # 5分钟
             "max_title_length": 50,
             "forbidden_topics": ["医疗", "金融投资", "迷信"],
-            "required_labels": ["内容分级"]
+            "required_labels": ["内容分级"],
         },
         "kuaishou": {
             "name": "快手",
             "max_duration": 600,  # 10分钟
             "max_title_length": 60,
-            "forbidden_topics": ["医疗", "赌博"]
+            "forbidden_topics": ["医疗", "赌博"],
         },
         "bilibili": {
             "name": "B站",
             "max_duration": 1800,  # 30分钟
             "min_resolution": "1080p",
-            "forbidden_topics": []
+            "forbidden_topics": [],
         },
         "novel": {
             "name": "网文平台",
             "max_chapter_words": 5000,
             "forbidden_topics": ["淫秽", "暴力血腥"],
-            "required_meta": ["章节标题", "字数", "更新时间"]
-        }
+            "required_meta": ["章节标题", "字数", "更新时间"],
+        },
     }
 
     def __init__(self, track: str = "short"):
-        """
-        初始化ScriptGuard
+        """初始化ScriptGuard
 
         Args:
             track: "short" (短视频) | "long" (网文长篇)
+
         """
         self.track = track
-        self.violation_history: List[Violation] = []
-        self.character_profiles: Dict[str, dict] = {}  # 人设档案
-        self.world_settings: Dict[str, Any] = {}  # 世界观设定
+        self.violation_history: list[Violation] = []
+        self.character_profiles: dict[str, dict] = {}  # 人设档案
+        self.world_settings: dict[str, Any] = {}  # 世界观设定
 
     def validate(self, content: dict, checkpoint: str = "draft") -> ValidationResult:
-        """
-        执行五大铁律校验
+        """执行五大铁律校验
 
         Args:
             content: 创作内容
@@ -139,6 +138,7 @@ class ScriptGuard:
 
         Returns:
             ValidationResult: 校验结果
+
         """
         violations = []
 
@@ -156,7 +156,7 @@ class ScriptGuard:
         v3_list = self._check_platform_rules(
             content.get("text", ""),
             content.get("platform", "douyin"),
-            content.get("metadata", {})
+            content.get("metadata", {}),
         )
         violations.extend(v3_list)
 
@@ -169,7 +169,7 @@ class ScriptGuard:
         if checkpoint in ["draft", "final"] and content.get("characters"):
             v5_list = self._check_character_consistency(
                 content.get("characters", []),
-                content.get("text", "")
+                content.get("text", ""),
             )
             violations.extend(v5_list)
 
@@ -192,10 +192,10 @@ class ScriptGuard:
                     "checkpoint": checkpoint,
                     "track": self.track,
                     "timestamp": datetime.now().isoformat(),
-                    "block_reason": "触碰铁律，必须人工整改"
-                }
+                    "block_reason": "触碰铁律，必须人工整改",
+                },
             )
-        elif has_warn:
+        if has_warn:
             return ValidationResult(
                 passed=True,
                 status=CheckResult.WARNING,
@@ -205,24 +205,23 @@ class ScriptGuard:
                 metadata={
                     "checkpoint": checkpoint,
                     "track": self.track,
-                    "timestamp": datetime.now().isoformat()
-                }
+                    "timestamp": datetime.now().isoformat(),
+                },
             )
-        else:
-            return ValidationResult(
-                passed=True,
-                status=CheckResult.PASSED,
-                violations=[],
-                can_proceed=True,
-                requires_human_review=False,
-                metadata={
-                    "checkpoint": checkpoint,
-                    "track": self.track,
-                    "timestamp": datetime.now().isoformat()
-                }
-            )
+        return ValidationResult(
+            passed=True,
+            status=CheckResult.PASSED,
+            violations=[],
+            can_proceed=True,
+            requires_human_review=False,
+            metadata={
+                "checkpoint": checkpoint,
+                "track": self.track,
+                "timestamp": datetime.now().isoformat(),
+            },
+        )
 
-    def _check_value_safety(self, text: str) -> Optional[Violation]:
+    def _check_value_safety(self, text: str) -> Violation | None:
         """IR-001: 价值观安全检查"""
         found_keywords = []
 
@@ -237,17 +236,17 @@ class ScriptGuard:
                 rule_name="价值观安全",
                 severity="block",
                 message=f"检测到敏感内容: {', '.join(found_keywords[:5])}",
-                suggestion="请修改相关内容，确保符合公序良俗"
+                suggestion="请修改相关内容，确保符合公序良俗",
             )
         return None
 
-    def _check_copyright(self, text: str) -> Optional[Violation]:
+    def _check_copyright(self, text: str) -> Violation | None:
         """IR-002: 版权合规检查（简化版）"""
         # 检查常见抄袭特征
         red_flags = [
             (r"原文如下", "疑似直接复制原文"),
             (r"摘自", "未标注引用来源"),
-            (r"【作者】", "可能未经授权使用他人作品")
+            (r"【作者】", "可能未经授权使用他人作品"),
         ]
 
         for pattern, reason in red_flags:
@@ -257,7 +256,7 @@ class ScriptGuard:
                     rule_name="版权合规",
                     severity="block",
                     message=f"检测到版权风险: {reason}",
-                    suggestion="确保内容为原创或已获得授权"
+                    suggestion="确保内容为原创或已获得授权",
                 )
 
         # TODO: 对接查重API进行深度检测
@@ -267,8 +266,8 @@ class ScriptGuard:
         self,
         text: str,
         platform: str,
-        metadata: dict
-    ) -> List[Violation]:
+        metadata: dict,
+    ) -> list[Violation]:
         """IR-003: 平台规则检查"""
         violations = []
         rules = self.PLATFORM_RULES.get(platform, self.PLATFORM_RULES["douyin"])
@@ -281,7 +280,7 @@ class ScriptGuard:
                     rule_name="平台规则",
                     severity="warn",
                     message=f"内容包含平台违禁话题: {topic}",
-                    suggestion=f"请删除或修改与{topic}相关的内容"
+                    suggestion=f"请删除或修改与{topic}相关的内容",
                 ))
 
         # 网文平台检查
@@ -294,7 +293,7 @@ class ScriptGuard:
                     rule_name="平台规则",
                     severity="warn",
                     message=f"章节字数超限: {word_count}/{max_words}",
-                    suggestion=f"建议拆分为多个章节，每章不超过{max_words}字"
+                    suggestion=f"建议拆分为多个章节，每章不超过{max_words}字",
                 ))
 
         # 短视频平台检查
@@ -307,19 +306,19 @@ class ScriptGuard:
                     rule_name="平台规则",
                     severity="warn",
                     message=f"视频时长超限: {duration}s/{max_duration}s",
-                    suggestion=f"请剪辑至{max_duration}秒以内"
+                    suggestion=f"请剪辑至{max_duration}秒以内",
                 ))
 
         return violations
 
-    def _check_logic_consistency(self, content: dict) -> List[Violation]:
+    def _check_logic_consistency(self, content: dict) -> list[Violation]:
         """IR-004: 逻辑自洽检查"""
         violations = []
         text = content.get("text", "")
-        plot_points = content.get("plot_points", [])
+        _ = content.get("plot_points", [])  # Reserved for future logic consistency checks
 
         # 检查时间线一致性
-        time_markers = re.findall(r'(\d+)年|(\d+)月|(\d+)日|第(\d+)章', text)
+        time_markers = re.findall(r"(\d+)年|(\d+)月|(\d+)日|第(\d+)章", text)
         if len(time_markers) > 5:
             # 检查是否有明显的时间倒退
             # 简化实现：仅检查标记数量
@@ -336,7 +335,7 @@ class ScriptGuard:
                     rule_name="逻辑自洽",
                     severity="warn",
                     message="因果逻辑表述过于频繁，可能存在强行解释",
-                    suggestion="尝试用行动和对话展现因果，减少直接陈述"
+                    suggestion="尝试用行动和对话展现因果，减少直接陈述",
                 ))
                 break
 
@@ -344,9 +343,9 @@ class ScriptGuard:
 
     def _check_character_consistency(
         self,
-        characters: List[dict],
-        text: str
-    ) -> List[Violation]:
+        characters: list[dict],
+        text: str,
+    ) -> list[Violation]:
         """IR-005: 人设稳定检查"""
         violations = []
 
@@ -358,7 +357,7 @@ class ScriptGuard:
             traits = self._extract_character_traits(profile)
 
             # 在文本中搜索角色行为
-            char_occurrences = [m.start() for m in re.finditer(name, text)]
+            _ = [m.start() for m in re.finditer(name, text)]  # Reserved for OOC detection
 
             # 检查是否有OOC（Out Of Character）行为
             # 简化实现：检查角色是否做了与其性格明显矛盾的事
@@ -369,7 +368,7 @@ class ScriptGuard:
                     severity="block",
                     message=f"角色'{name}'人设冲突：设定为'冷静'，但出现'冲动'行为",
                     location=f"{name}冲动",
-                    suggestion="修改行为描写，或调整人设设定"
+                    suggestion="修改行为描写，或调整人设设定",
                 ))
 
             if "善良" in traits and f"{name}残忍" in text:
@@ -378,16 +377,16 @@ class ScriptGuard:
                     rule_name="人设稳定",
                     severity="block",
                     message=f"角色'{name}'人设冲突：设定为'善良'，但出现'残忍'行为",
-                    suggestion="修改行为描写，或调整人设设定"
+                    suggestion="修改行为描写，或调整人设设定",
                 ))
 
         return violations
 
-    def _extract_character_traits(self, profile: str) -> List[str]:
+    def _extract_character_traits(self, profile: str) -> list[str]:
         """从人设描述中提取性格特征词"""
         trait_keywords = [
             "冷静", "冲动", "善良", "残忍", "聪明", "愚蠢",
-            "勇敢", "懦弱", "乐观", "悲观", "正直", "狡猾"
+            "勇敢", "懦弱", "乐观", "悲观", "正直", "狡猾",
         ]
         return [t for t in trait_keywords if t in profile]
 
@@ -396,7 +395,7 @@ class ScriptGuard:
         self.character_profiles[character_id] = {
             "profile": profile,
             "registered_at": datetime.now().isoformat(),
-            "version": 1
+            "version": 1,
         }
 
     def update_world_setting(self, setting: dict):
@@ -423,10 +422,10 @@ class ScriptGuard:
             "recent": [
                 {
                     "rule": v.rule_name,
-                    "message": v.message[:50] + "..." if len(v.message) > 50 else v.message
+                    "message": v.message[:50] + "..." if len(v.message) > 50 else v.message,
                 }
                 for v in self.violation_history[-5:]
-            ]
+            ],
         }
 
 
@@ -447,10 +446,10 @@ if __name__ == "__main__":
         "text": "这是一个测试剧本，主角是一个冷静的年轻人。",
         "title": "测试剧本",
         "characters": [
-            {"name": "李明", "profile": "性格冷静，处事果断"}
+            {"name": "李明", "profile": "性格冷静，处事果断"},
         ],
         "platform": "douyin",
-        "metadata": {"duration": 180}
+        "metadata": {"duration": 180},
     }
 
     result = guard.validate(test_content, checkpoint="draft")

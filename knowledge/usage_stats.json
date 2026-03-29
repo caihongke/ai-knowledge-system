@@ -2,8 +2,8 @@
   "hourly_calls": 0,
   "daily_tokens": 0,
   "daily_calls": 0,
-  "cache_hits": 0,
-  "cache_misses": 0,
-  "last_reset_hour": "2026-03-23-21",
-  "last_reset_date": "2026-03-23"
+  "cache_hits": 1,
+  "cache_misses": 3,
+  "last_reset_hour": "2026-03-29-23",
+  "last_reset_date": "2026-03-29"
 }

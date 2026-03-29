@@ -1,42 +1,39 @@
-# -*- coding: utf-8 -*-
-"""
-IterationEngine - 迭代优化引擎
+"""IterationEngine - 迭代优化引擎
 负责差距分析和改进方案生成
 """
 
-import json
+from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
-from typing import List, Dict, Optional, Any
-from dataclasses import dataclass, field
+from typing import Any
 
-from core.models import IterationRecord, CreationSession
+from core.models import CreationSession, IterationRecord
 from core.story_analyzer import AnalysisReport
 
 
 @dataclass
 class GapAnalysis:
     """差距分析结果"""
-    dimensions: List[str]  # 分析维度
-    current_scores: Dict[str, float]
-    target_scores: Dict[str, float]
-    gaps: Dict[str, float]  # 差距值
-    priority: List[tuple]   # (维度, 差距) 排序
+
+    dimensions: list[str]  # 分析维度
+    current_scores: dict[str, float]
+    target_scores: dict[str, float]
+    gaps: dict[str, float]  # 差距值
+    priority: list[tuple]   # (维度, 差距) 排序
 
 
 @dataclass
 class ImprovementPlan:
     """改进方案"""
-    strategies: List[Dict[str, Any]]  # 策略列表
-    expected_improvement: Dict[str, float]
-    components_needed: List[str]
+
+    strategies: list[dict[str, Any]]  # 策略列表
+    expected_improvement: dict[str, float]
+    components_needed: list[str]
     estimated_effort: str  # 工作量估计
     risk_level: str  # 低/中/高
 
 
 class IterationEngine:
-    """
-    迭代优化引擎
+    """迭代优化引擎
 
     核心流程：
     1. 差距分析 (当前 vs 目标)
@@ -52,14 +49,14 @@ class IterationEngine:
             "hook_score": 8.0,
             "conflict_density": 0.8,  # 每千字0.8个冲突点
             "structure_compliance": 85.0,
-            "emotion_variance": 3.0  # 情绪波动幅度
+            "emotion_variance": 3.0,  # 情绪波动幅度
         },
         "long": {
             "hook_score": 7.0,
             "conflict_density": 0.5,
             "structure_compliance": 80.0,
-            "cliffhanger_quality": 8.0  # 断章质量
-        }
+            "cliffhanger_quality": 8.0,  # 断章质量
+        },
     }
 
     # 改进策略库
@@ -69,31 +66,31 @@ class IterationEngine:
                 "name": "悬念强化",
                 "action": "在开头加入反常识观点或悬念",
                 "effort": "低",
-                "impact": "高"
+                "impact": "高",
             },
             {
                 "name": "冲突前置",
                 "action": "将核心冲突提前到前30秒/300字",
                 "effort": "中",
-                "impact": "高"
-            }
+                "impact": "高",
+            },
         ],
         "conflict_density": [
             {
                 "name": "冲突注入",
                 "action": "每15秒/每章设置一个冲突点",
                 "effort": "中",
-                "impact": "高"
-            }
+                "impact": "高",
+            },
         ],
         "structure_compliance": [
             {
                 "name": "结构梳理",
                 "action": "使用三幕式模板重新规划",
                 "effort": "高",
-                "impact": "中"
-            }
-        ]
+                "impact": "中",
+            },
+        ],
     }
 
     def __init__(self, track: str = "short"):
@@ -103,10 +100,9 @@ class IterationEngine:
     def analyze_gap(
         self,
         report: AnalysisReport,
-        custom_targets: Optional[Dict[str, float]] = None
+        custom_targets: dict[str, float] | None = None,
     ) -> GapAnalysis:
-        """
-        分析创作与目标的差距
+        """分析创作与目标的差距
 
         Args:
             report: 拉片分析报告
@@ -114,6 +110,7 @@ class IterationEngine:
 
         Returns:
             GapAnalysis 差距分析
+
         """
         targets = custom_targets or self.standards
 
@@ -121,7 +118,7 @@ class IterationEngine:
         current = {
             "hook_score": report.hook_score,
             "conflict_density": report.conflict_density,
-            "structure_compliance": report.structure_compliance
+            "structure_compliance": report.structure_compliance,
         }
 
         # 计算差距
@@ -131,23 +128,22 @@ class IterationEngine:
                 gaps[dim] = targets[dim] - current[dim]
 
         # 按差距大小排序（差距大的优先）
-        priority = sorted(gaps.items(), key=lambda x: -x[1] if x[1] > 0 else float('-inf'))
+        priority = sorted(gaps.items(), key=lambda x: -x[1] if x[1] > 0 else float("-inf"))
 
         return GapAnalysis(
             dimensions=list(targets.keys()),
             current_scores=current,
             target_scores=targets,
             gaps=gaps,
-            priority=priority
+            priority=priority,
         )
 
     def generate_improvement_plan(
         self,
         gap: GapAnalysis,
-        max_strategies: int = 3
+        max_strategies: int = 3,
     ) -> ImprovementPlan:
-        """
-        生成改进方案
+        """生成改进方案
 
         Args:
             gap: 差距分析结果
@@ -155,6 +151,7 @@ class IterationEngine:
 
         Returns:
             ImprovementPlan 改进方案
+
         """
         strategies = []
         components_needed = []
@@ -174,7 +171,7 @@ class IterationEngine:
                     "action": s["action"],
                     "effort": s["effort"],
                     "impact": s["impact"],
-                    "gap_to_address": gap_value
+                    "gap_to_address": gap_value,
                 }
                 strategies.append(strategy)
 
@@ -211,7 +208,7 @@ class IterationEngine:
             expected_improvement=expected_improvement,
             components_needed=list(set(components_needed)),
             estimated_effort=estimated_effort,
-            risk_level=risk_level
+            risk_level=risk_level,
         )
 
     def create_iteration_record(
@@ -219,10 +216,9 @@ class IterationEngine:
         session_id: str,
         trigger: str,
         gap: GapAnalysis,
-        plan: ImprovementPlan
+        plan: ImprovementPlan,
     ) -> IterationRecord:
-        """
-        创建迭代记录
+        """创建迭代记录
 
         Args:
             session_id: 项目ID
@@ -232,22 +228,22 @@ class IterationEngine:
 
         Returns:
             IterationRecord
+
         """
         return IterationRecord(
             iteration_id=f"iter_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             trigger=trigger,
             gap_analysis=gap.gaps,
             improvement_plan=[s["name"] for s in plan.strategies],
-            created_at=datetime.now().isoformat()
+            created_at=datetime.now().isoformat(),
         )
 
     def suggest_iteration_cycle(
         self,
         session: CreationSession,
-        force: bool = False
-    ) -> Dict[str, Any]:
-        """
-        建议迭代周期
+        force: bool = False,
+    ) -> dict[str, Any]:
+        """建议迭代周期
 
         规则：
         - 短视频：完成即分析
@@ -259,6 +255,7 @@ class IterationEngine:
 
         Returns:
             建议结果
+
         """
         if session.track == "short":
             # 短视频：有草稿即可分析
@@ -266,7 +263,7 @@ class IterationEngine:
                 return {
                     "should_iterate": True,
                     "reason": "剧本已完成，建议立即分析",
-                    "next_step": "运行: akm 分析 拉片 {项目ID}"
+                    "next_step": "运行: akm 分析 拉片 {项目ID}",
                 }
 
         else:  # long
@@ -278,22 +275,21 @@ class IterationEngine:
                 return {
                     "should_iterate": True,
                     "reason": f"第{iterations_count + 1}卷完成，建议进行分析",
-                    "next_step": "运行: akm 分析 拉片 {项目ID}"
+                    "next_step": "运行: akm 分析 拉片 {项目ID}",
                 }
 
         return {
             "should_iterate": False,
             "reason": "暂未达到迭代节点",
-            "progress": f"已完成 {len(session.drafts)} 个草稿 / {len(session.iterations)} 次迭代"
+            "progress": f"已完成 {len(session.drafts)} 个草稿 / {len(session.iterations)} 次迭代",
         }
 
     def track_improvement(
         self,
         previous_report: AnalysisReport,
-        current_report: AnalysisReport
-    ) -> Dict[str, Any]:
-        """
-        跟踪改进效果
+        current_report: AnalysisReport,
+    ) -> dict[str, Any]:
+        """跟踪改进效果
 
         Args:
             previous_report: 上次分析报告
@@ -301,13 +297,14 @@ class IterationEngine:
 
         Returns:
             改进追踪结果
+
         """
         improvements = {}
 
         metrics = [
             ("hook_score", previous_report.hook_score, current_report.hook_score),
             ("conflict_density", previous_report.conflict_density, current_report.conflict_density),
-            ("structure_compliance", previous_report.structure_compliance, current_report.structure_compliance)
+            ("structure_compliance", previous_report.structure_compliance, current_report.structure_compliance),
         ]
 
         for name, prev, curr in metrics:
@@ -316,7 +313,7 @@ class IterationEngine:
                 "previous": prev,
                 "current": curr,
                 "delta": delta,
-                "improved": delta > 0
+                "improved": delta > 0,
             }
 
         # 计算总体改进率
@@ -327,16 +324,15 @@ class IterationEngine:
             "improvements": improvements,
             "average_improvement": avg_improvement,
             "iteration_success": avg_improvement > 0,
-            "recommendation": "继续优化" if avg_improvement > 0 else "调整策略"
+            "recommendation": "继续优化" if avg_improvement > 0 else "调整策略",
         }
 
     def generate_personal_report(
         self,
-        sessions: List[CreationSession],
-        reports: List[AnalysisReport]
+        sessions: list[CreationSession],
+        reports: list[AnalysisReport],
     ) -> str:
-        """
-        生成个人创作报告
+        """生成个人创作报告
 
         Args:
             sessions: 所有创作会话
@@ -344,6 +340,7 @@ class IterationEngine:
 
         Returns:
             报告文本
+
         """
         if not sessions:
             return "暂无创作数据"
@@ -446,7 +443,7 @@ def quick_improve(content: str, title: str, track: str = "short") -> dict:
         "gaps": gap.gaps,
         "strategies": [s["name"] for s in plan.strategies],
         "estimated_effort": plan.estimated_effort,
-        "top_priority": gap.priority[0] if gap.priority else None
+        "top_priority": gap.priority[0] if gap.priority else None,
     }
 
 
@@ -461,7 +458,7 @@ if __name__ == "__main__":
         source_title="测试作品",
         hook_score=6.0,
         conflict_density=0.3,
-        structure_compliance=60.0
+        structure_compliance=60.0,
     )
 
     gap = engine.analyze_gap(report)

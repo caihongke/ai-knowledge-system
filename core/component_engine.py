@@ -1,33 +1,30 @@
-# -*- coding: utf-8 -*-
-"""
-ComponentEngine - 工业化组件引擎
+"""ComponentEngine - 工业化组件引擎
 支持人设、桥段、爽点等组件的按需加载和组合
 """
 
 import json
-import os
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Any
 from pathlib import Path
+from typing import Any
 
 
 @dataclass
 class Component:
     """组件定义"""
+
     id: str
     name: str
     category: str  # character / scene / payoff
-    tags: List[str] = field(default_factory=list)
-    params: Dict[str, Any] = field(default_factory=dict)
+    tags: list[str] = field(default_factory=list)
+    params: dict[str, Any] = field(default_factory=dict)
     description: str = ""
-    usage_examples: List[str] = field(default_factory=list)
-    compatible_with: List[str] = field(default_factory=list)
-    conflicts_with: List[str] = field(default_factory=list)
+    usage_examples: list[str] = field(default_factory=list)
+    compatible_with: list[str] = field(default_factory=list)
+    conflicts_with: list[str] = field(default_factory=list)
 
 
 class ComponentEngine:
-    """
-    工业化组件引擎
+    """工业化组件引擎
 
     核心原则：
     1. 按需加载，避免全量堆叠
@@ -51,58 +48,57 @@ class ComponentEngine:
     }
 
     def __init__(self, track: str = "short"):
-        """
-        初始化组件引擎
+        """初始化组件引擎
 
         Args:
             track: "short" | "long"
+
         """
         self.track = track
-        self.active_components: Dict[str, Component] = {}
-        self.component_library: Dict[str, List[Component]] = {
+        self.active_components: dict[str, Component] = {}
+        self.component_library: dict[str, list[Component]] = {
             "character": [],
             "scene": [],
-            "payoff": []
+            "payoff": [],
         }
         self._load_library()
 
     def _load_library(self):
         """加载组件库"""
-        base_path = Path(f"creation/components")
+        base_path = Path("creation/components")
 
         # 加载人设组件
         char_path = base_path / "characters"
         if char_path.exists():
             for f in char_path.glob("*.json"):
-                with open(f, 'r', encoding='utf-8') as fp:
+                with open(f, encoding="utf-8") as fp:
                     data = json.load(fp)
                     self.component_library["character"].append(
-                        Component(category="character", **data)
+                        Component(category="character", **data),
                     )
 
         # 加载桥段组件
         scene_path = base_path / "scenes"
         if scene_path.exists():
             for f in scene_path.glob("*.json"):
-                with open(f, 'r', encoding='utf-8') as fp:
+                with open(f, encoding="utf-8") as fp:
                     data = json.load(fp)
                     self.component_library["scene"].append(
-                        Component(category="scene", **data)
+                        Component(category="scene", **data),
                     )
 
         # 加载爽点组件
         payoff_path = base_path / "payoffs"
         if payoff_path.exists():
             for f in payoff_path.glob("*.json"):
-                with open(f, 'r', encoding='utf-8') as fp:
+                with open(f, encoding="utf-8") as fp:
                     data = json.load(fp)
                     self.component_library["payoff"].append(
-                        Component(category="payoff", **data)
+                        Component(category="payoff", **data),
                     )
 
     def load_component(self, component_id: str) -> dict:
-        """
-        按需加载组件
+        """按需加载组件
 
         Args:
             component_id: 组件ID
@@ -114,6 +110,7 @@ class ComponentEngine:
             ComponentNotFoundError: 组件不存在
             ComponentConflictError: 组件冲突
             TypeLimitExceededError: 超出类型限制
+
         """
         # 查找组件
         component = self._find_component(component_id)
@@ -129,14 +126,14 @@ class ComponentEngine:
         if current_count >= self.TYPE_LIMITS.get(category, 3):
             raise TypeLimitExceededError(
                 f"{category}类型组件已达上限({self.TYPE_LIMITS[category]}个)，"
-                f"请先卸载现有组件"
+                f"请先卸载现有组件",
             )
 
         # 检查冲突
         conflicts = self._check_conflicts(component)
         if conflicts:
             raise ComponentConflictError(
-                f"组件 {component_id} 与以下组件冲突: {', '.join(conflicts)}"
+                f"组件 {component_id} 与以下组件冲突: {', '.join(conflicts)}",
             )
 
         # 激活组件
@@ -148,7 +145,7 @@ class ComponentEngine:
             "category": component.category,
             "params": component.params,
             "description": component.description,
-            "usage_examples": component.usage_examples
+            "usage_examples": component.usage_examples,
         }
 
     def unload_component(self, component_id: str):
@@ -162,21 +159,20 @@ class ComponentEngine:
         """清空所有激活组件"""
         self.active_components.clear()
 
-    def get_active_components(self) -> List[dict]:
+    def get_active_components(self) -> list[dict]:
         """获取当前激活的组件列表"""
         return [
             {
                 "id": c.id,
                 "name": c.name,
                 "category": c.category,
-                "tags": c.tags
+                "tags": c.tags,
             }
             for c in self.active_components.values()
         ]
 
-    def suggest_components(self, genre: str, target_effect: str) -> List[dict]:
-        """
-        基于类型和目标效果推荐组件
+    def suggest_components(self, genre: str, target_effect: str) -> list[dict]:
+        """基于类型和目标效果推荐组件
 
         Args:
             genre: 类型/题材
@@ -184,6 +180,7 @@ class ComponentEngine:
 
         Returns:
             推荐组件列表
+
         """
         suggestions = []
 
@@ -204,7 +201,7 @@ class ComponentEngine:
                     suggestions.append({
                         "component": comp,
                         "score": score,
-                        "reason": f"匹配标签: {', '.join(set(comp.tags) & {genre, target_effect})}"
+                        "reason": f"匹配标签: {', '.join(set(comp.tags) & {genre, target_effect})}",
                     })
 
         # 按分数排序
@@ -216,12 +213,12 @@ class ComponentEngine:
                 "name": s["component"].name,
                 "category": s["component"].category,
                 "score": s["score"],
-                "reason": s["reason"]
+                "reason": s["reason"],
             }
             for s in suggestions[:5]  # 最多返回5个
         ]
 
-    def _find_component(self, component_id: str) -> Optional[Component]:
+    def _find_component(self, component_id: str) -> Component | None:
         """查找组件"""
         for components in self.component_library.values():
             for comp in components:
@@ -229,7 +226,7 @@ class ComponentEngine:
                     return comp
         return None
 
-    def _check_conflicts(self, new_component: Component) -> List[str]:
+    def _check_conflicts(self, new_component: Component) -> list[str]:
         """检查组件冲突"""
         conflicts = []
 
@@ -293,25 +290,25 @@ class ComponentEngine:
 
 class ComponentNotFoundError(Exception):
     """组件不存在错误"""
-    pass
+
 
 
 class ComponentConflictError(Exception):
     """组件冲突错误"""
-    pass
+
 
 
 class TypeLimitExceededError(Exception):
     """类型限制超出错误"""
-    pass
+
 
 
 # 便捷函数
 def create_character_component(
     name: str,
     archetype: str,
-    traits: List[str],
-    arc_type: str
+    traits: list[str],
+    arc_type: str,
 ) -> Component:
     """创建人设组件"""
     return Component(
@@ -323,17 +320,17 @@ def create_character_component(
             "archetype": archetype,
             "traits": traits,
             "arc_type": arc_type,
-            "complexity": "medium"
+            "complexity": "medium",
         },
-        description=f"{archetype}类型人设，具有{', '.join(traits)}特征"
+        description=f"{archetype}类型人设，具有{', '.join(traits)}特征",
     )
 
 
 def create_scene_component(
     name: str,
     scene_type: str,
-    tension_curve: List[float],
-    emotion_trigger: str
+    tension_curve: list[float],
+    emotion_trigger: str,
 ) -> Component:
     """创建桥段组件"""
     return Component(
@@ -345,9 +342,9 @@ def create_scene_component(
             "type": scene_type,
             "tension_curve": tension_curve,
             "emotion_trigger": emotion_trigger,
-            "duration_estimate": "3-5分钟"
+            "duration_estimate": "3-5分钟",
         },
-        description=f"{scene_type}桥段，情绪触发点: {emotion_trigger}"
+        description=f"{scene_type}桥段，情绪触发点: {emotion_trigger}",
     )
 
 
@@ -355,7 +352,7 @@ def create_payoff_component(
     name: str,
     payoff_type: str,
     setup_chapters: int,
-    intensity: str
+    intensity: str,
 ) -> Component:
     """创建爽点组件"""
     return Component(
@@ -367,9 +364,9 @@ def create_payoff_component(
             "type": payoff_type,
             "setup_chapters": setup_chapters,
             "intensity": intensity,
-            "reader_satisfaction": "high" if intensity == "高" else "medium"
+            "reader_satisfaction": "high" if intensity == "高" else "medium",
         },
-        description=f"{payoff_type}爽点，铺垫{setup_chapters}章，强度{intensity}"
+        description=f"{payoff_type}爽点，铺垫{setup_chapters}章，强度{intensity}",
     )
 
 
@@ -382,7 +379,7 @@ if __name__ == "__main__":
         "美强惨女主",
         "大女主",
         ["美貌", "实力强", "身世惨"],
-        "逆袭成长"
+        "逆袭成长",
     )
 
     print(f"组件创建: {comp1.name}")

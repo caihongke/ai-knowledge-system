@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 """AI自学知识管理系统 - CLI 入口"""
 
 import os
-import sys
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -12,10 +11,10 @@ from rich.console import Console
 from rich.markdown import Markdown
 from rich.table import Table
 
-from core.storage import Storage
-from core.spaced_repetition import SpacedRepetition
-from cli.creation_commands import register_creation_commands
 from cli.analysis_commands import register_analysis_commands
+from cli.creation_commands import register_creation_commands
+from core.spaced_repetition import SpacedRepetition
+from core.storage import Storage
 
 # 修复 Windows GBK 编码问题
 if sys.platform == "win32":
@@ -137,10 +136,10 @@ def kb_search(keyword: str = typer.Argument(help="搜索关键词")):
     """全文检索笔记"""
     results = storage.search_notes(keyword)
     if not results:
-        console.print(f"[yellow]未找到包含 \"{keyword}\" 的笔记[/yellow]")
+        console.print(f'[yellow]未找到包含 "{keyword}" 的笔记[/yellow]')
         return
 
-    table = Table(title=f"搜索结果: \"{keyword}\"")
+    table = Table(title=f'搜索结果: "{keyword}"')
     table.add_column("ID", style="cyan")
     table.add_column("标题", style="bold")
     table.add_column("匹配位置", style="green")
@@ -180,7 +179,7 @@ def kb_delete(note_id: str = typer.Argument(help="笔记ID")):
         console.print(f"[red][ERR] 笔记不存在: {note_id}[/red]")
         raise typer.Exit(1)
 
-    confirm = typer.confirm(f"确定删除笔记 \"{note.title}\" ({note_id})?")
+    confirm = typer.confirm(f'确定删除笔记 "{note.title}" ({note_id})?')
     if not confirm:
         console.print("已取消")
         return
@@ -250,7 +249,7 @@ def review_done(note_id: str = typer.Argument(help="笔记ID")):
     elif next_date:
         console.print(f"[green][OK][/green] {note.title} — 下次复习: {next_date}")
     else:
-        console.print(f"[yellow]该笔记不在复习计划中[/yellow]")
+        console.print("[yellow]该笔记不在复习计划中[/yellow]")
 
 
 @review_app.command("统计")
@@ -307,7 +306,7 @@ def learn_suggest():
 
     # AI 深度洞察（如果有）
     if result.ai_insights:
-        console.print(f"\n[bold cyan]AI 洞察:[/bold cyan]")
+        console.print("\n[bold cyan]AI 洞察:[/bold cyan]")
         console.print(result.ai_insights)
 
     # 学习建议
@@ -368,8 +367,8 @@ def learn_summary(
 @learn_app.command("状态")
 def learn_status():
     """查看 AI/Ollama 服务状态"""
-    from core.ollama_client import OllamaHelper
     from core.config import Config
+    from core.ollama_client import OllamaHelper
 
     cfg = Config.summary()
 
@@ -386,7 +385,7 @@ def learn_status():
     table.add_row(
         "Ollama",
         ollama_status,
-        f"{status['host']} / {cfg['ollama_model']}"
+        f"{status['host']} / {cfg['ollama_model']}",
     )
 
     # 已安装模型
@@ -394,7 +393,7 @@ def learn_status():
         table.add_row(
             "已安装模型",
             f"{status['model_count']} 个",
-            ", ".join(status["installed_models"][:3])
+            ", ".join(status["installed_models"][:3]),
         )
 
     console.print(table)
@@ -480,6 +479,7 @@ def sync_export(
 ):
     """导出知识库为本地备份"""
     import shutil
+
     from core.config import Config
     out_path = Path(output)
     out_path.mkdir(parents=True, exist_ok=True)
@@ -525,19 +525,19 @@ def sys_cost():
         "本小时调用",
         str(stats["调用统计"]["本小时调用"]),
         "50",
-        str(remaining["hourly_calls"])
+        str(remaining["hourly_calls"]),
     )
     quota_table.add_row(
         "本日调用",
         str(stats["调用统计"]["本日调用"]),
         "-",
-        "-"
+        "-",
     )
     quota_table.add_row(
         "本日 Token",
         stats["调用统计"]["本日Token"],
         "100,000",
-        f"{remaining['daily_tokens']:,}"
+        f"{remaining['daily_tokens']:,}",
     )
 
     console.print(quota_table)
@@ -552,7 +552,7 @@ def sys_cost():
     cache_table.add_row("未命中次数", str(cache_stats["未命中次数"]))
     cache_table.add_row("命中率", cache_stats["命中率"])
 
-    console.print(f"\n")
+    console.print("\n")
     console.print(cache_table)
 
     # 成本估算

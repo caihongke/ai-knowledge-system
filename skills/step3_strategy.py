@@ -1,20 +1,17 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-七步法第3步 - 策略规划
+"""七步法第3步 - 策略规划
 功能：WBS分解、排期、风险识别
 输出保存到：/steps/step3/
 """
 
 import sys
-import os
 from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.storage import Storage
 from core.models import Note
+from core.storage import Storage
 
 
 def main():
@@ -70,7 +67,7 @@ def main():
         title=f"策略清单_{timestamp}",
         content=strategy,
         tags=["step3", "策略", "WBS"],
-        source="七步法"
+        source="七步法",
     )
     storage.add_note(note)
 

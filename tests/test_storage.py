@@ -1,8 +1,9 @@
 """存储模块功能测试"""
 
 import sys
-from core.storage import Storage
+
 from core.config import Config
+from core.storage import Storage
 
 
 def run_tests():

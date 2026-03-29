@@ -1,20 +1,17 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-七步法第6步 - 监控预警
+"""七步法第6步 - 监控预警
 功能：进度跟踪、偏差分析、预警报告
 输出保存到：/logs/ 和 /reports/
 """
 
 import sys
-import os
 from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.storage import Storage
 from core.models import Note
+from core.storage import Storage
 
 
 def main():
@@ -86,7 +83,7 @@ def main():
         title=f"预警报告_{timestamp}",
         content=alert,
         tags=["step6", "监控", "预警"],
-        source="七步法"
+        source="七步法",
     )
     storage.add_note(note)
 

@@ -4,15 +4,16 @@
 """
 
 import json
-import urllib.request
 import urllib.error
-from typing import Iterator, Optional
+import urllib.request
+from collections.abc import Iterator
 from dataclasses import dataclass
 
 
 @dataclass
 class OllamaMessage:
     """对话消息"""
+
     role: str  # system, user, assistant
     content: str
 
@@ -23,7 +24,7 @@ class OllamaClient:
     DEFAULT_HOST = "http://localhost:11434"
     DEFAULT_MODEL = "qwen2.5:7b"
 
-    def __init__(self, host: Optional[str] = None, model: Optional[str] = None):
+    def __init__(self, host: str | None = None, model: str | None = None):
         self.host = host or self.DEFAULT_HOST
         self.model = model or self.DEFAULT_MODEL
         self._available = None
@@ -36,7 +37,7 @@ class OllamaClient:
             req = urllib.request.Request(
                 f"{self.host}/api/tags",
                 method="GET",
-                headers={"Content-Type": "application/json"}
+                headers={"Content-Type": "application/json"},
             )
             with urllib.request.urlopen(req, timeout=3) as resp:
                 self._available = resp.status == 200
@@ -51,39 +52,39 @@ class OllamaClient:
             req = urllib.request.Request(
                 f"{self.host}/api/tags",
                 method="GET",
-                headers={"Content-Type": "application/json"}
+                headers={"Content-Type": "application/json"},
             )
             with urllib.request.urlopen(req, timeout=5) as resp:
-                data = json.loads(resp.read().decode('utf-8'))
-                return data.get('models', [])
-        except Exception as e:
+                data = json.loads(resp.read().decode("utf-8"))
+                return data.get("models", [])
+        except Exception:
             return []
 
     def has_model(self, model_name: str) -> bool:
         """检查指定模型是否已安装"""
         models = self.list_models()
-        return any(m.get('name') == model_name or m.get('model') == model_name for m in models)
+        return any(m.get("name") == model_name or m.get("model") == model_name for m in models)
 
     def pull_model(self, model_name: str) -> Iterator[str]:
         """拉取模型（流式输出进度）"""
         try:
-            data = json.dumps({"name": model_name}).encode('utf-8')
+            data = json.dumps({"name": model_name}).encode("utf-8")
             req = urllib.request.Request(
                 f"{self.host}/api/pull",
                 data=data,
                 headers={"Content-Type": "application/json"},
-                method="POST"
+                method="POST",
             )
             with urllib.request.urlopen(req, timeout=300) as resp:
                 for line in resp:
-                    line = line.decode('utf-8').strip()
+                    line = line.decode("utf-8").strip()
                     if line:
                         try:
                             chunk = json.loads(line)
-                            if 'status' in chunk:
-                                yield chunk['status']
-                            if 'completed' in chunk and chunk.get('total'):
-                                pct = int(chunk['completed'] / chunk['total'] * 100)
+                            if "status" in chunk:
+                                yield chunk["status"]
+                            if "completed" in chunk and chunk.get("total"):
+                                pct = int(chunk["completed"] / chunk["total"] * 100)
                                 yield f"下载中... {pct}%"
                         except json.JSONDecodeError:
                             continue
@@ -91,8 +92,7 @@ class OllamaClient:
             yield f"错误: {e}"
 
     def chat(self, messages: list[OllamaMessage], stream: bool = False) -> str | Iterator[str]:
-        """
-        发送对话请求
+        """发送对话请求
 
         Args:
             messages: 对话历史
@@ -100,25 +100,25 @@ class OllamaClient:
 
         Returns:
             完整回复文本，或流式生成器
+
         """
         payload = {
             "model": self.model,
             "messages": [{"role": m.role, "content": m.content} for m in messages],
-            "stream": stream
+            "stream": stream,
         }
 
-        data = json.dumps(payload).encode('utf-8')
+        data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
             f"{self.host}/api/chat",
             data=data,
             headers={"Content-Type": "application/json"},
-            method="POST"
+            method="POST",
         )
 
         if stream:
             return self._chat_stream(req)
-        else:
-            return self._chat_sync(req)
+        return self._chat_sync(req)
 
     def _chat_sync(self, req: urllib.request.Request) -> str:
         """同步对话（一次性返回）"""
@@ -126,17 +126,17 @@ class OllamaClient:
             with urllib.request.urlopen(req, timeout=120) as resp:
                 full_response = []
                 for line in resp:
-                    line = line.decode('utf-8').strip()
+                    line = line.decode("utf-8").strip()
                     if line:
                         try:
                             chunk = json.loads(line)
-                            if 'message' in chunk and 'content' in chunk['message']:
-                                full_response.append(chunk['message']['content'])
-                            if chunk.get('done'):
+                            if "message" in chunk and "content" in chunk["message"]:
+                                full_response.append(chunk["message"]["content"])
+                            if chunk.get("done"):
                                 break
                         except json.JSONDecodeError:
                             continue
-                return ''.join(full_response)
+                return "".join(full_response)
         except urllib.error.HTTPError as e:
             return f"[错误] HTTP {e.code}: {e.reason}"
         except Exception as e:
@@ -147,22 +147,21 @@ class OllamaClient:
         try:
             with urllib.request.urlopen(req, timeout=120) as resp:
                 for line in resp:
-                    line = line.decode('utf-8').strip()
+                    line = line.decode("utf-8").strip()
                     if line:
                         try:
                             chunk = json.loads(line)
-                            if 'message' in chunk and 'content' in chunk['message']:
-                                yield chunk['message']['content']
-                            if chunk.get('done'):
+                            if "message" in chunk and "content" in chunk["message"]:
+                                yield chunk["message"]["content"]
+                            if chunk.get("done"):
                                 break
                         except json.JSONDecodeError:
                             continue
         except Exception as e:
             yield f"[错误] {e}"
 
-    def generate(self, prompt: str, system: Optional[str] = None) -> str:
-        """
-        简单文本生成（单次问答）
+    def generate(self, prompt: str, system: str | None = None) -> str:
+        """简单文本生成（单次问答）
 
         Args:
             prompt: 用户输入
@@ -170,6 +169,7 @@ class OllamaClient:
 
         Returns:
             AI 回复文本
+
         """
         messages = []
         if system:
@@ -191,14 +191,13 @@ class OllamaHelper:
             "available": available,
             "host": client.host,
             "default_model": client.DEFAULT_MODEL,
-            "installed_models": [m.get('name', m.get('model', 'unknown')) for m in models],
-            "model_count": len(models)
+            "installed_models": [m.get("name", m.get("model", "unknown")) for m in models],
+            "model_count": len(models),
         }
 
     @staticmethod
     def recommend_model() -> str:
         """根据系统配置推荐模型"""
-        import platform
         import psutil
 
         mem_gb = psutil.virtual_memory().total / (1024**3)
@@ -207,23 +206,22 @@ class OllamaHelper:
         has_gpu = False
         try:
             import subprocess
-            result = subprocess.run(['nvidia-smi'], capture_output=True, timeout=2)
+            result = subprocess.run(["nvidia-smi"], capture_output=True, timeout=2)
             has_gpu = result.returncode == 0
-        except:
+        except Exception:
             pass
 
         if has_gpu and mem_gb >= 16:
             return "qwen2.5:14b"  # 大模型，质量更好
-        elif mem_gb >= 8:
+        if mem_gb >= 8:
             return "qwen2.5:7b"   # 平衡选择
-        elif mem_gb >= 4:
+        if mem_gb >= 4:
             return "qwen2.5:1.8b" # 轻量级
-        else:
-            return "phi3:mini"    # 超轻量
+        return "phi3:mini"    # 超轻量
 
 
 # 便捷函数
-def quick_ask(prompt: str, system: Optional[str] = None, model: Optional[str] = None) -> str:
+def quick_ask(prompt: str, system: str | None = None, model: str | None = None) -> str:
     """快速提问，无需实例化客户端"""
     client = OllamaClient(model=model)
     if not client.is_available():
@@ -243,7 +241,7 @@ if __name__ == "__main__":
     print(f"默认模型: {status['default_model']}")
     print(f"已安装模型: {', '.join(status['installed_models']) or '无'}")
 
-    if status['available']:
+    if status["available"]:
         print(f"\n推荐模型: {OllamaHelper.recommend_model()}")
         print("\n测试对话...")
         client = OllamaClient()

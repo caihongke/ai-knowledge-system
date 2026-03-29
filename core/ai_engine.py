@@ -1,28 +1,27 @@
-# -*- coding: utf-8 -*-
 """AI 知识引擎 - 集成 Ollama 的智能分析
 
 结合本地规则引擎和 Ollama 大模型，提供增强的知识库分析能力。
 """
 
 import json
-from typing import Optional
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 
-from core.storage import Storage
-from core.spaced_repetition import SpacedRepetition
-from core.ollama_client import OllamaClient, OllamaMessage
 from core.economy_controller import EconomyController, SmartCache
+from core.ollama_client import OllamaClient
+from core.spaced_repetition import SpacedRepetition
+from core.storage import Storage
 
 
 @dataclass
 class LearningAnalysis:
     """学习分析报告"""
+
     status: str  # "ok" | "empty" | "offline"
     summary: str
     knowledge_map: dict
     review_health: dict
     suggestions: list[dict]
-    ai_insights: Optional[str] = None  # AI 深度洞察
+    ai_insights: str | None = None  # AI 深度洞察
     ai_available: bool = False
 
 
@@ -45,8 +44,7 @@ class AIEngine:
         return self._ai_available
 
     def analyze(self) -> LearningAnalysis:
-        """
-        综合分析知识库，优先使用 AI，降级到规则引擎
+        """综合分析知识库，优先使用 AI，降级到规则引擎
         """
         notes = self.storage.list_notes()
 
@@ -59,9 +57,9 @@ class AIEngine:
                 suggestions=[{
                     "topic": "开始使用",
                     "reason": "添加第一条笔记，建立你的知识库",
-                    "priority": "高"
+                    "priority": "高",
                 }],
-                ai_available=False
+                ai_available=False,
             )
 
         # 基础统计（规则引擎部分）
@@ -87,10 +85,10 @@ class AIEngine:
             review_health=stats,
             suggestions=suggestions,
             ai_insights=ai_insights,
-            ai_available=self.ai_available
+            ai_available=self.ai_available,
         )
 
-    def _ai_analyze_knowledge(self, notes, tags, stats) -> Optional[str]:
+    def _ai_analyze_knowledge(self, notes, tags, stats) -> str | None:
         """使用 AI 分析知识库结构和盲点（带经济控制）"""
         try:
             # 构建知识库摘要
@@ -151,7 +149,7 @@ class AIEngine:
             suggestions.append({
                 "topic": f"深化: {weak_areas[0]}",
                 "reason": "该领域只有一条笔记，建议补充更多相关内容",
-                "priority": "中"
+                "priority": "中",
             })
 
         # 新增领域建议
@@ -159,7 +157,7 @@ class AIEngine:
             suggestions.append({
                 "topic": "拓展新领域",
                 "reason": "知识库领域较少，尝试学习全新主题",
-                "priority": "高"
+                "priority": "高",
             })
 
         # 如果没有建议，给一个通用的
@@ -167,14 +165,13 @@ class AIEngine:
             suggestions.append({
                 "topic": "整理与连接",
                 "reason": "尝试在不同笔记间建立链接，形成知识网络",
-                "priority": "中"
+                "priority": "中",
             })
 
         return suggestions[:3]  # 最多3条
 
     def ask_knowledge_base(self, question: str) -> str:
-        """
-        基于知识库内容回答问题（RAG 简化版，带经济控制）
+        """基于知识库内容回答问题（RAG 简化版，带经济控制）
         """
         if not self.ai_available:
             return "[错误] Ollama 服务未启动，无法使用 AI 问答功能"
@@ -206,7 +203,7 @@ class AIEngine:
             # 没有相关笔记，直接回答
             result = self.ollama.generate(
                 question,
-                system="你是AI学习助手，基于已有知识回答问题。"
+                system="你是AI学习助手，基于已有知识回答问题。",
             )
             self.economy.record_call(estimated_tokens)
             self.smart_cache.save_with_prompt(question, "qa", result)
@@ -232,8 +229,7 @@ class AIEngine:
         return result
 
     def summarize_note(self, note_id: str) -> str:
-        """
-        为单条笔记生成 AI 总结（带经济控制）
+        """为单条笔记生成 AI 总结（带经济控制）
         """
         note = self.storage.get_note(note_id)
         if not note:
@@ -277,8 +273,7 @@ class AIEngine:
         return result
 
     def suggest_connections(self, note_id: str) -> list[dict]:
-        """
-        为笔记推荐相关连接
+        """为笔记推荐相关连接
         """
         target_note = self.storage.get_note(note_id)
         if not target_note:
@@ -298,7 +293,7 @@ class AIEngine:
                     "note_id": note.id,
                     "title": note.title,
                     "shared_tags": list(shared_tags),
-                    "strength": len(shared_tags)
+                    "strength": len(shared_tags),
                 })
 
         # 按关联强度排序
@@ -316,7 +311,7 @@ class AIEngine:
 
         # 分词（简单按空格和标点分割）
         import re
-        words = re.findall(r'[\u4e00-\u9fff]+|[a-zA-Z]+', text)
+        words = re.findall(r"[\u4e00-\u9fff]+|[a-zA-Z]+", text)
 
         # 过滤停用词和短词
         keywords = [w for w in words if w not in stopwords and len(w) >= 2]

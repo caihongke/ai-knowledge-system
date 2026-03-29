@@ -1,22 +1,16 @@
-# -*- coding: utf-8 -*-
-"""
-CreationBridge - 创作系统与知识库的数据沉淀通道
+"""CreationBridge - 创作系统与知识库的数据沉淀通道
 打通创作→知识库的循环
 """
 
-import json
 from datetime import datetime
-from pathlib import Path
-from typing import List, Dict, Optional
 
-from core.storage import Storage
-from core.models import Note, CreationSession, AnalysisReport
+from core.models import AnalysisReport, CreationSession, Note
 from core.spaced_repetition import SpacedRepetition
+from core.storage import Storage
 
 
 class CreationBridge:
-    """
-    创作数据沉淀桥
+    """创作数据沉淀桥
 
     核心功能：
     1. 创作经验→知识库笔记
@@ -32,10 +26,9 @@ class CreationBridge:
     def export_creation_to_knowledge(
         self,
         session: CreationSession,
-        analysis: Optional[AnalysisReport] = None
-    ) -> List[str]:
-        """
-        将创作沉淀到知识库
+        analysis: AnalysisReport | None = None,
+    ) -> list[str]:
+        """将创作沉淀到知识库
 
         Args:
             session: 创作会话
@@ -43,6 +36,7 @@ class CreationBridge:
 
         Returns:
             创建的笔记ID列表
+
         """
         note_ids = []
 
@@ -65,7 +59,7 @@ class CreationBridge:
     def _create_experience_note(
         self,
         session: CreationSession,
-        analysis: Optional[AnalysisReport]
+        analysis: AnalysisReport | None,
     ) -> Note:
         """创建创作经验笔记"""
         title = f"创作经验: {session.title}"
@@ -108,15 +102,15 @@ class CreationBridge:
         note = self.storage.add_note(
             title=title,
             content=content,
-            tags=["创作经验", session.track, session.genre, session.platform]
+            tags=["创作经验", session.track, session.genre, session.platform],
         )
 
         return note
 
     def _create_component_note(
         self,
-        component: Dict,
-        session: CreationSession
+        component: dict,
+        session: CreationSession,
     ) -> Note:
         """创建组件经验笔记"""
         title = f"组件验证: {component['name']}"
@@ -148,7 +142,7 @@ class CreationBridge:
         note = self.storage.add_note(
             title=title,
             content=content,
-            tags=["组件验证", component['id'], session.genre]
+            tags=["组件验证", component["id"], session.genre],
         )
 
         return note
@@ -156,7 +150,7 @@ class CreationBridge:
     def _create_lesson_note(
         self,
         session: CreationSession,
-        analysis: AnalysisReport
+        analysis: AnalysisReport,
     ) -> Note:
         """创建教训/反思笔记"""
         title = f"创作反思: {session.title}"
@@ -190,14 +184,13 @@ class CreationBridge:
         note = self.storage.add_note(
             title=title,
             content=content,
-            tags=["创作反思", session.track, "复盘"]
+            tags=["创作反思", session.track, "复盘"],
         )
 
         return note
 
     def generate_component_library_note(self) -> Note:
-        """
-        生成个人组件库索引笔记
+        """生成个人组件库索引笔记
         """
         # 搜索所有组件验证笔记
         results = self.storage.search_notes("组件验证")
@@ -235,14 +228,13 @@ class CreationBridge:
         note = self.storage.add_note(
             title="个人组件库索引",
             content=content,
-            tags=["组件库", "索引", "创作资源"]
+            tags=["组件库", "索引", "创作资源"],
         )
 
         return note
 
     def schedule_creation_review(self, session: CreationSession) -> str:
-        """
-        为创作设置复习计划
+        """为创作设置复习计划
 
         创作经验的复习策略：
         - 1天后: 快速回顾
@@ -273,12 +265,12 @@ class CreationBridge:
 
     def _add_days(self, date_str: str, days: int) -> str:
         """日期加法"""
-        from datetime import datetime, timedelta
+        from datetime import timedelta
         date = datetime.fromisoformat(date_str)
         new_date = date + timedelta(days=days)
         return new_date.strftime("%Y-%m-%d")
 
-    def get_creation_stats(self) -> Dict:
+    def get_creation_stats(self) -> dict:
         """获取创作统计数据"""
         notes = self.storage.list_notes()
 
@@ -298,12 +290,12 @@ class CreationBridge:
             "total_reflections": len(reflection_notes),
             "total_component_tests": len(component_notes),
             "genre_distribution": genre_counts,
-            "knowledge_accumulation": len(creation_notes) * 3  # 每创作产生约3条知识
+            "knowledge_accumulation": len(creation_notes) * 3,  # 每创作产生约3条知识
         }
 
 
 # 便捷函数
-def quick_export(session: CreationSession) -> List[str]:
+def quick_export(session: CreationSession) -> list[str]:
     """快速导出创作到知识库"""
     bridge = CreationBridge()
     return bridge.export_creation_to_knowledge(session)

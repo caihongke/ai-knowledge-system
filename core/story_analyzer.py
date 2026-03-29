@@ -1,15 +1,12 @@
-# -*- coding: utf-8 -*-
-"""
-StoryAnalyzer - 拉片分析Agent
+"""StoryAnalyzer - 拉片分析Agent
 负责剧本和网文的标准化拉片分析
 """
 
-import json
 import re
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Optional, Any
-from dataclasses import dataclass, field
+from typing import Any
 
 from core.models import AnalysisReport
 
@@ -17,6 +14,7 @@ from core.models import AnalysisReport
 @dataclass
 class EmotionalNode:
     """情绪节点"""
+
     position: float  # 0-1 位置
     value: float     # 0-10 情绪值
     trigger: str     # 触发事件
@@ -26,16 +24,16 @@ class EmotionalNode:
 @dataclass
 class ConflictPoint:
     """冲突点"""
+
     position: float
     conflict_type: str
     intensity: str   # 低/中/高/极高
-    participants: List[str]
+    participants: list[str]
     resolution: str
 
 
 class StoryAnalyzer:
-    """
-    拉片分析Agent
+    """拉片分析Agent
 
     核心功能：
     1. Hook吸引力评分
@@ -49,12 +47,12 @@ class StoryAnalyzer:
     EMOTION_KEYWORDS = {
         "high": ["激动", "兴奋", "愤怒", "恐惧", "狂喜", "震惊", "热血沸腾"],
         "medium": ["紧张", "焦虑", "期待", "疑惑", "感动", "欣慰"],
-        "low": ["平静", "悲伤", "失落", "无聊", "疲倦", "无奈"]
+        "low": ["平静", "悲伤", "失落", "无聊", "疲倦", "无奈"],
     }
 
     # 冲突类型定义
     CONFLICT_TYPES = [
-        "人与自我", "人与人", "人与社会", "人与自然", "人与命运"
+        "人与自我", "人与人", "人与社会", "人与自然", "人与命运",
     ]
 
     def __init__(self):
@@ -65,10 +63,9 @@ class StoryAnalyzer:
         content: str,
         title: str,
         content_type: str = "short",  # short/long
-        source: str = "自有作品"
+        source: str = "自有作品",
     ) -> AnalysisReport:
-        """
-        执行完整拉片分析
+        """执行完整拉片分析
 
         Args:
             content: 作品内容文本
@@ -78,6 +75,7 @@ class StoryAnalyzer:
 
         Returns:
             AnalysisReport 分析报告
+
         """
         # 1. Hook分析
         hook_score = self._analyze_hook(content)
@@ -94,7 +92,7 @@ class StoryAnalyzer:
 
         # 5. 生成改进建议
         suggestions = self._generate_suggestions(
-            hook_score, conflicts, emotion_curve, structure_score
+            hook_score, conflicts, emotion_curve, structure_score,
         )
 
         return AnalysisReport(
@@ -106,12 +104,11 @@ class StoryAnalyzer:
             structure_compliance=structure_score,
             improvement_suggestions=suggestions,
             created_at=datetime.now().isoformat(),
-            analyzer="story-analyzer"
+            analyzer="story-analyzer",
         )
 
     def _analyze_hook(self, content: str) -> float:
-        """
-        分析Hook吸引力
+        """分析Hook吸引力
 
         评分维度：
         - 好奇心激发 (0-3分)
@@ -135,19 +132,19 @@ class StoryAnalyzer:
             score += 1.0
 
         # 数字/数据（增加可信度）
-        if re.search(r'\d+', hook_text):
+        if re.search(r"\d+", hook_text):
             score += 0.5
 
         return min(score, 10.0)
 
-    def _analyze_conflicts(self, content: str) -> List[ConflictPoint]:
+    def _analyze_conflicts(self, content: str) -> list[ConflictPoint]:
         """分析冲突点"""
         conflicts = []
 
         # 冲突标记词
         conflict_markers = [
             "冲突", "对抗", "矛盾", "争吵", "战斗", "争执",
-            "误解", "背叛", "陷害", "报复", "挑战"
+            "误解", "背叛", "陷害", "报复", "挑战",
         ]
 
         content_length = len(content)
@@ -165,7 +162,7 @@ class StoryAnalyzer:
                     conflict_type=self._classify_conflict(context),
                     intensity=intensity,
                     participants=[],  # 需要NLP提取
-                    resolution=""
+                    resolution="",
                 ))
 
         return conflicts
@@ -190,16 +187,14 @@ class StoryAnalyzer:
         """分类冲突类型"""
         if any(w in context for w in ["内心", "纠结", "挣扎", "矛盾"]):
             return "人与自我"
-        elif any(w in context for w in ["社会", "规则", "制度", "道德"]):
+        if any(w in context for w in ["社会", "规则", "制度", "道德"]):
             return "人与社会"
-        elif any(w in context for w in ["命运", "天命", "宿命", "注定"]):
+        if any(w in context for w in ["命运", "天命", "宿命", "注定"]):
             return "人与命运"
-        else:
-            return "人与人"
+        return "人与人"
 
-    def _analyze_emotion_curve(self, content: str) -> List[EmotionalNode]:
-        """
-        分析15节点情绪曲线
+    def _analyze_emotion_curve(self, content: str) -> list[EmotionalNode]:
+        """分析15节点情绪曲线
 
         将内容分为15段，分析每段的情绪值
         """
@@ -222,7 +217,7 @@ class StoryAnalyzer:
                 position=i / 14,
                 value=emotion_value,
                 trigger=trigger,
-                technique=""
+                technique="",
             ))
 
         return curve
@@ -243,8 +238,7 @@ class StoryAnalyzer:
         return max(0, min(10, value))
 
     def _analyze_structure(self, content: str, content_type: str) -> float:
-        """
-        分析结构完整度
+        """分析结构完整度
 
         短视频(3-5分钟): Hook -> 发展 -> 高潮 -> 结局
         网文(章): 承接 -> 发展 -> 钩子
@@ -257,7 +251,7 @@ class StoryAnalyzer:
                 "有明确开头": bool(content[:100]),
                 "有发展部分": len(content) > 200,
                 "有高潮迹象": any(w in content for w in ["高潮", "终于", "关键时刻"]),
-                "有结局/收尾": any(w in content[-200:] for w in ["结局", "最后", "总之", "所以"])
+                "有结局/收尾": any(w in content[-200:] for w in ["结局", "最后", "总之", "所以"]),
             }
             score = sum(checks.values()) / len(checks) * 100
 
@@ -266,7 +260,7 @@ class StoryAnalyzer:
             checks = {
                 "有承接": any(w in content[:100] for w in ["上回", "接着", "随后"]),
                 "有发展": len(content) > 500,
-                "有钩子": any(w in content[-100:] for w in ["?", "悬念", "究竟", "难道"])
+                "有钩子": any(w in content[-100:] for w in ["?", "悬念", "究竟", "难道"]),
             }
             score = sum(checks.values()) / len(checks) * 100
 
@@ -275,10 +269,10 @@ class StoryAnalyzer:
     def _generate_suggestions(
         self,
         hook_score: float,
-        conflicts: List[ConflictPoint],
-        emotion_curve: List[EmotionalNode],
-        structure_score: float
-    ) -> List[str]:
+        conflicts: list[ConflictPoint],
+        emotion_curve: list[EmotionalNode],
+        structure_score: float,
+    ) -> list[str]:
         """生成改进建议"""
         suggestions = []
 
@@ -286,7 +280,7 @@ class StoryAnalyzer:
         if hook_score < 6:
             suggestions.append(f"[高优先级] Hook吸引力不足({hook_score:.1f}/10)，建议增加悬念或冲突")
         elif hook_score < 8:
-            suggestions.append(f"[中优先级] Hook有提升空间，可加入数据或反常识观点")
+            suggestions.append("[中优先级] Hook有提升空间，可加入数据或反常识观点")
 
         # 冲突建议
         if len(conflicts) < 3:
@@ -301,27 +295,26 @@ class StoryAnalyzer:
         if structure_score < 70:
             suggestions.append(f"[高优先级] 结构完整度不足({structure_score:.0f}%)，检查起承转合")
 
-        return suggestions if suggestions else ["整体表现良好，继续保持"]
+        return suggestions or ["整体表现良好，继续保持"]
 
     def compare_with_benchmark(
         self,
         report: AnalysisReport,
-        benchmark: AnalysisReport
-    ) -> Dict[str, Any]:
-        """
-        与对标作品对比分析
+        benchmark: AnalysisReport,
+    ) -> dict[str, Any]:
+        """与对标作品对比分析
         """
         comparison = {
             "dimensions": {},
             "gaps": [],
-            "advantages": []
+            "advantages": [],
         }
 
         # 对比各维度
         dimensions = [
             ("Hook设计", report.hook_score, benchmark.hook_score),
             ("冲突密度", report.conflict_density, benchmark.conflict_density),
-            ("结构完整度", report.structure_compliance, benchmark.structure_compliance)
+            ("结构完整度", report.structure_compliance, benchmark.structure_compliance),
         ]
 
         for name, current, target in dimensions:
@@ -329,7 +322,7 @@ class StoryAnalyzer:
             comparison["dimensions"][name] = {
                 "current": current,
                 "target": target,
-                "diff": diff
+                "diff": diff,
             }
 
             if diff < -1:
@@ -342,10 +335,9 @@ class StoryAnalyzer:
     def export_report(
         self,
         report: AnalysisReport,
-        output_path: Optional[str] = None
+        output_path: str | None = None,
     ) -> str:
-        """
-        导出标准化分析报告
+        """导出标准化分析报告
         """
         if not output_path:
             output_path = f"creation/analysis/reports/report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
@@ -400,7 +392,7 @@ class StoryAnalyzer:
 *本报告由StoryAnalyzer自动生成*
 """
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(content)
 
         return output_path
@@ -415,7 +407,7 @@ def quick_analyze(content: str, title: str) -> dict:
         "hook_score": report.hook_score,
         "conflict_density": report.conflict_density,
         "structure_compliance": report.structure_compliance,
-        "suggestions": report.improvement_suggestions
+        "suggestions": report.improvement_suggestions,
     }
 
 

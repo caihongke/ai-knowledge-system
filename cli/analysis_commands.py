@@ -1,20 +1,18 @@
-# -*- coding: utf-8 -*-
-"""
-分析系统CLI命令
+"""分析系统CLI命令
 story-analyzer 和 iteration-engine 的命令接口
 """
 
-import typer
-from typing import Optional, List
-from rich.console import Console
-from rich.table import Table
-from rich.panel import Panel
-from rich.tree import Tree
+from datetime import datetime
 
-from core.story_analyzer import StoryAnalyzer
-from core.iteration_engine import IterationEngine, quick_improve
+import typer
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+
+from core.creation_agents import ScriptLongAgent, ScriptShortAgent
 from core.creation_bridge import CreationBridge
-from core.creation_agents import ScriptShortAgent, ScriptLongAgent
+from core.iteration_engine import IterationEngine
+from core.story_analyzer import StoryAnalyzer
 
 console = Console()
 
@@ -28,7 +26,7 @@ report_cmd = typer.Typer(name="报告", help="创作报告生成")
 @analysis_cmd.command("拉片")
 def analyze_work(
     project_id: str = typer.Argument(..., help="项目ID"),
-    source: str = typer.Option("自有作品", "--来源", "-s", help="作品来源: 自有作品/竞品作品")
+    source: str = typer.Option("自有作品", "--来源", "-s", help="作品来源: 自有作品/竞品作品"),
 ):
     """对作品进行拉片分析"""
     # 判断项目类型
@@ -47,7 +45,7 @@ def analyze_work(
 
     # 获取内容
     if not session.drafts:
-        console.print(f"[red]✗[/red] 项目没有草稿，先生成草稿")
+        console.print("[red]✗[/red] 项目没有草稿，先生成草稿")
         return
 
     content = session.drafts[-1].content
@@ -58,7 +56,7 @@ def analyze_work(
         content=content,
         title=session.title,
         content_type=track,
-        source=source
+        source=source,
     )
 
     # 显示结果
@@ -67,7 +65,7 @@ def analyze_work(
         f"[cyan]类型:[/cyan] {track}\n"
         f"[cyan]来源:[/cyan] {source}",
         title="拉片分析",
-        border_style="blue"
+        border_style="blue",
     ))
 
     # 核心指标
@@ -112,8 +110,8 @@ def analyze_work(
 @analysis_cmd.command("迭代")
 def analyze_iteration(
     project_id: str = typer.Argument(..., help="项目ID"),
-    target_hook: Optional[float] = typer.Option(None, "--目标-hook", help="目标Hook得分"),
-    target_structure: Optional[float] = typer.Option(None, "--目标结构", help="目标结构完整度")
+    target_hook: float | None = typer.Option(None, "--目标-hook", help="目标Hook得分"),
+    target_structure: float | None = typer.Option(None, "--目标结构", help="目标结构完整度"),
 ):
     """生成迭代优化方案"""
     track = "short" if project_id.startswith("short_") else "long"
@@ -126,7 +124,7 @@ def analyze_iteration(
 
     session = agent._load_session(project_id)
     if not session or not session.drafts:
-        console.print(f"[red]✗[/red] 项目不存在或无草稿")
+        console.print("[red]✗[/red] 项目不存在或无草稿")
         return
 
     # 获取上次的分析结果
@@ -143,14 +141,14 @@ def analyze_iteration(
     if target_structure:
         custom_targets["structure_compliance"] = target_structure
 
-    gap = engine.analyze_gap(report, custom_targets if custom_targets else None)
+    gap = engine.analyze_gap(report, custom_targets or None)
 
     # 显示差距
     console.print(Panel.fit(
         f"[cyan]作品:[/cyan] {session.title}\n"
         f"[cyan]当前迭代:[/cyan] 第{len(session.iterations) + 1}轮",
         title="迭代分析",
-        border_style="blue"
+        border_style="blue",
     ))
 
     table = Table(title="差距分析")
@@ -184,7 +182,7 @@ def analyze_iteration(
         session_id=project_id,
         trigger="拉片分析后优化",
         gap=gap,
-        plan=plan
+        plan=plan,
     )
 
     session.iterations.append(record)
@@ -196,7 +194,7 @@ def analyze_iteration(
 @analysis_cmd.command("对比")
 def analyze_compare(
     project_id: str = typer.Argument(..., help="项目ID"),
-    benchmark_id: str = typer.Argument(..., help="对标作品项目ID")
+    benchmark_id: str = typer.Argument(..., help="对标作品项目ID"),
 ):
     """与对标作品对比分析"""
     console.print("[yellow]对比分析功能开发中...[/yellow]")
@@ -209,7 +207,6 @@ def analyze_compare(
 @report_cmd.command("个人")
 def report_personal():
     """生成个人创作报告"""
-    import os
     from pathlib import Path
 
     # 收集所有创作项目
@@ -250,7 +247,7 @@ def report_personal():
             report = analyzer.analyze(
                 session.drafts[-1].content,
                 session.title,
-                session.track
+                session.track,
             )
             reports.append(report)
 
@@ -260,13 +257,13 @@ def report_personal():
     report_path = f"reports/个人创作报告_{datetime.now().strftime('%Y%m%d')}.md"
     Path(report_path).parent.mkdir(exist_ok=True)
 
-    with open(report_path, 'w', encoding='utf-8') as f:
+    with open(report_path, "w", encoding="utf-8") as f:
         f.write(report_text)
 
     console.print(Panel.fit(
         report_text[:1000] + "...",
         title="个人创作报告",
-        border_style="green"
+        border_style="green",
     ))
 
     console.print(f"\n[green]✓[/green] 报告已保存: {report_path}")
@@ -274,7 +271,7 @@ def report_personal():
 
 @report_cmd.command("沉淀")
 def report_export(
-    project_id: str = typer.Argument(..., help="项目ID")
+    project_id: str = typer.Argument(..., help="项目ID"),
 ):
     """将创作沉淀到知识库"""
     track = "short" if project_id.startswith("short_") else "long"
@@ -286,7 +283,7 @@ def report_export(
 
     session = agent._load_session(project_id)
     if not session:
-        console.print(f"[red]✗[/red] 项目不存在")
+        console.print("[red]✗[/red] 项目不存在")
         return
 
     # 导出到知识库

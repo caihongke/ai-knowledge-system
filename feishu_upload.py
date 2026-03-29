@@ -7,12 +7,13 @@
 - 可作为模块导入（供 CLI sync 命令调用）
 """
 
-import requests
+import argparse
+import os
 import sys
 import time
-import os
-import argparse
 from datetime import datetime
+
+import requests
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
@@ -48,7 +49,7 @@ def read_file(file_path):
 
     for enc in ("utf-8", "gbk", "utf-16"):
         try:
-            with open(abs_path, "r", encoding=enc) as f:
+            with open(abs_path, encoding=enc) as f:
                 return f.read()
         except UnicodeDecodeError:
             continue
@@ -60,21 +61,20 @@ def set_file_permission(token, file_token):
     url = f"https://open.feishu.cn/open-apis/drive/v1/files/{file_token}/permissions/public"
     headers = {
         "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
     data = {
-        "access": "tenant_readable"  # 租户内所有人可读
+        "access": "tenant_readable",  # 租户内所有人可读
     }
 
     try:
         resp = requests.post(url, headers=headers, json=data, timeout=10)
         result = resp.json()
         if result.get("code") == 0:
-            print(f"[OK] 文件分享权限设置成功")
+            print("[OK] 文件分享权限设置成功")
             return True
-        else:
-            print(f"[WARN] 权限设置失败: {result.get('msg')}")
-            return False
+        print(f"[WARN] 权限设置失败: {result.get('msg')}")
+        return False
     except Exception as e:
         print(f"[WARN] 权限设置异常: {e}")
         return False

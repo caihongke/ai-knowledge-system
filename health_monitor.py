@@ -1,19 +1,16 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-多智能体协同系统 - 健康监控模块
+"""多智能体协同系统 - 健康监控模块
 功能：自检与自愈、健康日志、飞书告警、日报生成
 """
 
-import os
-import sys
-import json
-import time
-import shutil
-import requests
 import argparse
+import shutil
+import sys
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
+
+import requests
 
 # 项目根目录
 BASE_DIR = Path(__file__).parent.resolve()
@@ -67,7 +64,7 @@ def load_config():
 
     try:
         import yaml
-        with open(yaml_path, "r", encoding="utf-8") as f:
+        with open(yaml_path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
         alerting = data.get("alerting", {})
         config["feishu_webhook_url"] = alerting.get("feishu_webhook_url", "")
@@ -273,17 +270,17 @@ def run_health_check(send_alerts=True):
 
     # 构建摘要
     summary_lines = [
-        f"# 系统健康检查报告",
+        "# 系统健康检查报告",
         f"**时间**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
         f"**状态**: {'正常' if not errors and not warns else '异常'}",
-        f"",
-        f"| 级别 | 数量 |",
-        f"|------|------|",
+        "",
+        "| 级别 | 数量 |",
+        "|------|------|",
         f"| OK | {len(oks)} |",
         f"| INFO | {len(infos)} |",
         f"| WARN | {len(warns)} |",
         f"| ERROR | {len(errors)} |",
-        f"",
+        "",
     ]
 
     if errors or warns:
@@ -320,10 +317,10 @@ def generate_daily_report():
     yesterday = now - timedelta(days=1)
 
     report_lines = [
-        f"# 主Agent日报",
+        "# 主Agent日报",
         f"**生成时间**: {now.strftime('%Y-%m-%d %H:%M')}",
         f"**统计周期**: {yesterday.strftime('%Y-%m-%d')} ~ {now.strftime('%Y-%m-%d')}",
-        f"",
+        "",
     ]
 
     # 1. 步骤执行统计
@@ -363,7 +360,7 @@ def generate_daily_report():
 
     if HEALTH_LOG.exists():
         try:
-            with open(HEALTH_LOG, "r", encoding="utf-8") as f:
+            with open(HEALTH_LOG, encoding="utf-8") as f:
                 for line in f:
                     # 仅统计24h内的日志
                     if line.startswith("["):

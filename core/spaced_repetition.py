@@ -2,7 +2,6 @@
 
 import json
 from datetime import datetime, timedelta
-from typing import List, Optional
 
 from core.config import Config
 
@@ -43,7 +42,7 @@ class SpacedRepetition:
             del self.schedule[note_id]
             self._save()
 
-    def get_today_reviews(self) -> List[str]:
+    def get_today_reviews(self) -> list[str]:
         """获取今日待复习的笔记 ID 列表"""
         today = datetime.now().strftime("%Y-%m-%d")
         return [
@@ -51,7 +50,7 @@ class SpacedRepetition:
             if info["next_review"] <= today
         ]
 
-    def mark_done(self, note_id: str) -> Optional[str]:
+    def mark_done(self, note_id: str) -> str | None:
         """标记复习完成，返回下次复习日期。若已掌握返回 None"""
         if note_id not in self.schedule:
             return None
@@ -85,6 +84,6 @@ class SpacedRepetition:
             "in_progress": in_progress,
         }
 
-    def get_note_info(self, note_id: str) -> Optional[dict]:
+    def get_note_info(self, note_id: str) -> dict | None:
         """获取笔记的复习信息"""
         return self.schedule.get(note_id)

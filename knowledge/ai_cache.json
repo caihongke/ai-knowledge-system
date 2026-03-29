@@ -1,0 +1,23 @@
+{
+  "key1": {
+    "result": "value1",
+    "created_at": "2026-03-29T23:14:54.396184",
+    "last_access": "2026-03-29T23:14:54.396574",
+    "access_count": 1,
+    "ttl_hours": 26
+  },
+  "key2": {
+    "result": "value2",
+    "created_at": "2026-03-29T23:14:54.396201",
+    "last_access": "2026-03-29T23:14:54.396201",
+    "access_count": 0,
+    "ttl_hours": 24
+  },
+  "key3": {
+    "result": "value3",
+    "created_at": "2026-03-29T23:14:54.396207",
+    "last_access": "2026-03-29T23:14:54.396207",
+    "access_count": 0,
+    "ttl_hours": 24
+  }
+}

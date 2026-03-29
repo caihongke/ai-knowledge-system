@@ -1,20 +1,16 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-七步法第2步 - 蓝图设计
+"""七步法第2步 - 蓝图设计
 功能：路径规划、里程碑设定、交付物定义
 输出保存到：/steps/step2/
 """
 
 import sys
-import os
 from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.storage import Storage
-from core.models import Note
 
 
 def main():
@@ -72,14 +68,12 @@ def main():
 
     # 同步到知识库
     storage = Storage()
-    note = Note(
-        id=f"step2-{timestamp}",
+    note = storage.add_note(
         title=f"蓝图设计_{timestamp}",
-        content=blueprint,
         tags=["step2", "蓝图", "规划"],
-        source="七步法"
+        category="七步法",
+        content=blueprint,
     )
-    storage.add_note(note)
 
     print(f"[OK] 蓝图已生成: {blueprint_path}")
     print(f"[OK] 已同步到知识库，ID: {note.id}")

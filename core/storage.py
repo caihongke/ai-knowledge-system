@@ -2,8 +2,6 @@
 
 import json
 from datetime import datetime
-from pathlib import Path
-from typing import List, Optional
 
 from core.config import Config
 from core.models import Note
@@ -17,14 +15,14 @@ class Storage:
 
     # --- 索引读写 ---
 
-    def load_index(self) -> List[Note]:
+    def load_index(self) -> list[Note]:
         """加载笔记索引"""
         if not Config.INDEX_FILE.exists():
             return []
         data = json.loads(Config.INDEX_FILE.read_text(encoding="utf-8"))
         return [Note.from_dict(item) for item in data]
 
-    def save_index(self, notes: List[Note]) -> None:
+    def save_index(self, notes: list[Note]) -> None:
         """保存笔记索引"""
         data = [note.to_dict() for note in notes]
         Config.INDEX_FILE.write_text(
@@ -34,7 +32,7 @@ class Storage:
 
     # --- CRUD ---
 
-    def add_note(self, title: str, tags: List[str], category: str, content: str = "") -> Note:
+    def add_note(self, title: str, tags: list[str], category: str, content: str = "") -> Note:
         """新建笔记：创建 Markdown 文件 + 更新索引"""
         note_id = Note.generate_id()
         file_name = f"{note_id}.md"
@@ -60,7 +58,7 @@ class Storage:
 
         return note
 
-    def get_note(self, note_id: str) -> Optional[Note]:
+    def get_note(self, note_id: str) -> Note | None:
         """按 ID 获取笔记"""
         notes = self.load_index()
         for note in notes:
@@ -75,7 +73,7 @@ class Storage:
             return file_path.read_text(encoding="utf-8")
         return ""
 
-    def update_note(self, note_id: str, **kwargs) -> Optional[Note]:
+    def update_note(self, note_id: str, **kwargs) -> Note | None:
         """更新笔记元数据"""
         notes = self.load_index()
         for i, note in enumerate(notes):
@@ -116,7 +114,7 @@ class Storage:
         self,
         tag: str = "",
         category: str = "",
-    ) -> List[Note]:
+    ) -> list[Note]:
         """列出笔记，支持按标签和分类筛选"""
         notes = self.load_index()
         if tag:
@@ -125,7 +123,7 @@ class Storage:
             notes = [n for n in notes if n.category == category]
         return notes
 
-    def search_notes(self, keyword: str) -> List[dict]:
+    def search_notes(self, keyword: str) -> list[dict]:
         """全文检索：搜索标题和内容"""
         results = []
         keyword_lower = keyword.lower()

@@ -1,14 +1,11 @@
-# -*- coding: utf-8 -*-
-"""
-Creation Commands - CLI for creation system
+"""Creation Commands - CLI for creation system
 """
 
 import typer
 from rich.console import Console
-from rich.panel import Panel
 
-from core.creation_agents import ScriptShortAgent, ScriptLongAgent
 from core.component_engine import ComponentEngine
+from core.creation_agents import ScriptLongAgent, ScriptShortAgent
 
 console = Console()
 
@@ -21,7 +18,7 @@ component = typer.Typer(help="Component library management")
 def short_create(
     title: str,
     platform: str = "douyin",
-    genre: str = "drama"
+    genre: str = "drama",
 ):
     """Create new short video project"""
     agent = ScriptShortAgent()
@@ -33,7 +30,7 @@ def long_create(
     title: str,
     platform: str = "qidian",
     genre: str = "fantasy",
-    words: int = 100
+    words: int = 100,
 ):
     """Create new novel project"""
     agent = ScriptLongAgent()
