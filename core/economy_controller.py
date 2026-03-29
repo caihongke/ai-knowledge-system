@@ -390,8 +390,12 @@ class EconomyController:
         content = f"{context}:{prompt}"
         return hashlib.md5(content.encode()).hexdigest()[:16]
 
-    def get_cached_result(self, cache_key: str) -> str | None:
-        """获取缓存结果（使用高级缓存，线程安全）"""
+    def get_cached_result(self, cache_key: str):
+        """获取缓存结果（使用高级缓存，线程安全，自动反序列化）
+
+        Returns:
+            缓存的原始类型（自动从 JSON 反序列化）
+        """
         with self._cache_lock:
             result = self.advanced_cache.get(cache_key)
             if result:
@@ -399,17 +403,34 @@ class EconomyController:
                 # 热门内容延长 TTL
                 self.advanced_cache.extend_ttl(cache_key, additional_hours=2)
                 self._persist_cache()
+
+                # 尝试自动反序列化
+                try:
+                    return json.loads(result)
+                except (json.JSONDecodeError, TypeError):
+                    # 如果不是 JSON 格式，返回原始字符串
+                    return result
             else:
                 self.record_cache_miss()
-            return result
+                return None
 
-    def save_cache(self, cache_key: str, result: str):
-        """保存缓存结果（使用高级缓存，线程安全）"""
+    def save_cache(self, cache_key: str, result, ttl_hours: float | None = None):
+        """保存缓存结果（使用高级缓存，线程安全，自动序列化）
+
+        Args:
+            cache_key: 缓存键
+            result: 缓存值（任意类型，会自动序列化为 JSON）
+            ttl_hours: 有效期（小时），None 时使用默认值
+        """
+        # 自动序列化非字符串类型
+        if not isinstance(result, str):
+            result = json.dumps(result, ensure_ascii=False)
+
         with self._cache_lock:
             self.advanced_cache.set(
                 cache_key,
                 result,
-                ttl_hours=Config.AI_CACHE_HOURS,
+                ttl_hours=ttl_hours or Config.AI_CACHE_HOURS,
             )
             self._persist_cache()
             self.record_cache_miss()
