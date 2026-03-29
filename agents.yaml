@@ -1,10 +1,10 @@
 # =============================================================
 # 多智能体协同系统 - Agent角色定义与安全约束
 # =============================================================
-version: "1.0"
+version: "1.1"
 
 # -------------------------------------------------------------
-# Agent分类（3类）
+# Agent分类（4类）
 # -------------------------------------------------------------
 categories:
   analysis:
@@ -43,6 +43,21 @@ categories:
       - "仅可写入 /logs/ 和 /reports/ 目录"
       - "告警输出至 health.log 和飞书Webhook"
 
+  creation:
+    description: "创作类Agent - 负责剧本/网文创作与迭代（双赛道）"
+    agents:
+      - script-short      # 短视频剧本创作（3-5分钟）
+      - script-long       # 网文长篇创作（100万字+）
+      - story-analyzer    # 拉片分析
+      - iteration-engine  # 迭代优化
+    shared_constraints:
+      - "仅可写入 /creation/{track}/ 目录（track=short|long）"
+      - "禁止跨赛道访问对方工作文件（short与long完全隔离）"
+      - "所有创作产出必须通过ScriptGuard五大铁律校验"
+      - "关键决策节点（hook选择、剧情转折）必须人工确认"
+      - "触碰铁律(IR-001~IR-005)时强制暂停，等待人工整改"
+      - "创作过程中必须按节点完成阶段自检，不可跳过"
+
 # -------------------------------------------------------------
 # 全局安全红线 - 注入每个子Agent的System Prompt
 # -------------------------------------------------------------
@@ -61,6 +76,90 @@ global_red_lines:
     rule: "所有敏感操作（删除文件、修改配置、上传至外部服务）必须获得用户明确确认后方可执行"
 
 # -------------------------------------------------------------
+# 创作系统铁律 - ScriptGuard校验规则
+# -------------------------------------------------------------
+creation_iron_rules:
+  - id: "IR-001"
+    name: "价值观安全"
+    description: "内容不得违反公序良俗、传播负能量或触碰敏感话题"
+    action: "block"
+    auto_fix: false
+    keywords:
+      - "暴力血腥"
+      - "歧视"
+      - "违法"
+    check_type: "content_scan"
+
+  - id: "IR-002"
+    name: "版权合规"
+    description: "禁止抄袭、洗稿或未经授权使用他人原创内容"
+    action: "block"
+    auto_fix: false
+    check_type: "originality"
+    similarity_threshold: 0.7
+
+  - id: "IR-003"
+    name: "平台规则"
+    description: "符合目标平台的内容规范（抖音/快手/B站/知乎等）"
+    action: "warn"
+    auto_fix: true
+    platforms:
+      douyin:
+        max_duration: 300
+        forbidden_topics: ["医疗", "金融投资"]
+      kuaishou:
+        max_duration: 600
+      bilibili:
+        min_resolution: "1080p"
+
+  - id: "IR-004"
+    name: "逻辑自洽"
+    description: "剧情前后一致，无逻辑漏洞或设定冲突"
+    action: "warn"
+    auto_fix: false
+    check_type: "consistency"
+    check_points:
+      - "时间线"
+      - "因果关系"
+      - "角色行为动机"
+
+  - id: "IR-005"
+    name: "人设稳定"
+    description: "角色性格、能力、价值观保持一致，不OOC"
+    action: "block"
+    auto_fix: false
+    check_type: "character"
+    strictness: "high"
+
+# -------------------------------------------------------------
+# 经济控制层 - 成本与资源管理
+# -------------------------------------------------------------
+economy_controls:
+  # 调用频率限制
+  rate_limits:
+    max_calls_per_hour: 50
+    max_calls_per_day: 200
+    max_tokens_per_day: 100000
+
+  # 缓存策略
+  cache:
+    enabled: true
+    ttl_hours: 24
+    max_entries: 100
+    similarity_threshold: 0.85  # 相似度超过此值复用缓存
+
+  # 降级策略
+  fallback:
+    on_quota_exceeded: "rules_engine"  # 超限时降级到规则引擎
+    on_timeout: "cache_only"           # 超时仅使用缓存
+    notify_user: true                  # 是否通知用户降级
+
+  # 成本预警
+  alerts:
+    hourly_usage_threshold: 80  # 小时用量超过80%告警
+    daily_usage_threshold: 70   # 日用量超过70%告警
+
+# -------------------------------------------------------------
 # 告警配置
 # -------------------------------------------------------------
 alerting:
@@ -77,3 +176,4 @@ alerting:
     - "step_execution_failed"   # 步骤产出包含错误标记
     - "workspace_integrity"     # 关键文件缺失或损坏
     - "security_violation"      # 安全红线约束被违反
+    - "iron_rule_violated"      # 五大铁律被触碰
