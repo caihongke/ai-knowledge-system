@@ -13,6 +13,7 @@ from rich.table import Table
 
 from cli.analysis_commands import register_analysis_commands
 from cli.creation_commands import register_creation_commands
+from cli.charlie_commands import register_charlie_commands
 from core.spaced_repetition import SpacedRepetition
 from core.storage import Storage
 
@@ -575,6 +576,7 @@ def sys_cost():
 # Register creation system commands
 register_creation_commands(app)
 register_analysis_commands(app)
+register_charlie_commands(app)
 
 if __name__ == "__main__":
     app()
